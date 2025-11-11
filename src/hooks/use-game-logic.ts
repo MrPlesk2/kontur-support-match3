@@ -18,6 +18,7 @@ export const useGameLogic = () => {
   const [isSwapping, setIsSwapping] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [score, setScore] = useState(0);
 
   const areAdjacent = useCallback((pos1: Position, pos2: Position): boolean => {
     const rowDiff = Math.abs(pos1.row - pos2.row);
@@ -29,6 +30,7 @@ export const useGameLogic = () => {
     async (currentBoard: Board): Promise<Board> => {
       let boardToProcess = currentBoard;
       let hasMatches = true;
+      let roundScore = 0;
 
       while (hasMatches) {
         const foundMatches = findAllMatches(boardToProcess);
@@ -37,6 +39,10 @@ export const useGameLogic = () => {
           hasMatches = false;
           break;
         }
+
+        foundMatches.forEach((match) => {
+          roundScore += match.positions.length * 10;
+        });
 
         setMatches(foundMatches);
         await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
@@ -54,6 +60,10 @@ export const useGameLogic = () => {
         boardToProcess = fillEmptySlots(boardToProcess);
         setBoard(boardToProcess);
         await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+      }
+
+      if (roundScore > 0) {
+        setScore((prevScore) => prevScore + roundScore);
       }
 
       return boardToProcess;
@@ -133,6 +143,7 @@ export const useGameLogic = () => {
     isSwapping,
     isAnimating,
     matches,
+    score,
     handleCellClick,
     handleDragStart,
     handleDragOver,
