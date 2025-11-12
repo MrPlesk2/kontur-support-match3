@@ -10,5 +10,5 @@ export const INITIAL_GOALS: Goal[] = [
 ];
 export const INITIAL_BONUSES: Bonus[] = [
   { type: "friendlyTeam", count: 3 },
-  { type: "barbell", count: 2 },
+  { type: "careerGrowth", count: 2 },
 ];

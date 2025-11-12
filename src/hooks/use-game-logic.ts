@@ -6,16 +6,15 @@ import { useBonuses } from "./use-bonuses";
 import { useGameActions } from "./use-game-actions";
 
 export const useGameLogic = () => {
-  // Состояния
   const { board, setBoard } = useBoardState();
   const gameState = useGameState();
 
-  // Логика
   const { updateGoals } = useGoals(gameState.setGoals);
   const { handleBonus } = useBonuses(
     gameState.setBonuses,
     setBoard,
-    gameState.setIsAnimating
+    gameState.setIsAnimating,
+    gameState.setModifiers
   );
   const { areAdjacent, swapFigures } = useGameActions(
     board,
@@ -24,10 +23,11 @@ export const useGameLogic = () => {
     gameState.setIsAnimating,
     gameState.setMatches,
     gameState.setScore,
-    updateGoals
+    updateGoals,
+    gameState.modifiers,
+    gameState.setModifiers
   );
 
-  // Обработчики событий
   const handleCellClick = (position: Position) => {
     if (gameState.isSwapping || gameState.isAnimating || gameState.moves <= 0)
       return;
@@ -73,7 +73,6 @@ export const useGameLogic = () => {
     }
   };
 
-  // Функция для использования бонуса
   const handleUseBonus = (type: Bonus["type"]) => {
     if (gameState.isAnimating) return;
     handleBonus(type, board);
@@ -82,7 +81,6 @@ export const useGameLogic = () => {
   const resetSelection = () => gameState.setSelectedPosition(null);
 
   return {
-    // Состояние
     board,
     selectedPosition: gameState.selectedPosition,
     isSwapping: gameState.isSwapping,
@@ -93,7 +91,6 @@ export const useGameLogic = () => {
     goals: gameState.goals,
     bonuses: gameState.bonuses,
 
-    // Действия
     handleCellClick,
     handleDragStart,
     handleDragOver,

@@ -1,14 +1,16 @@
 import { useCallback } from "react";
-import { Bonus, Board } from "types";
+import { Bonus, Board, GameModifiers } from "types";
 import {
   applyFriendlyTeamEffect,
   applyBarbellEffect,
+  applyCareerGrowthEffect,
 } from "@utils/bonus-effects";
 
 export const useBonuses = (
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void,
   setBoard: (board: Board) => void,
-  setIsAnimating: (animating: boolean) => void
+  setIsAnimating: (animating: boolean) => void,
+  setModifiers: (modifiers: GameModifiers) => void
 ) => {
   const handleBonus = useCallback(
     async (type: Bonus["type"], currentBoard: Board) => {
@@ -28,22 +30,29 @@ export const useBonuses = (
         return newBonuses;
       });
 
-      let newBoard = currentBoard;
-
       if (type === "barbell") {
-        newBoard = applyBarbellEffect(currentBoard);
+        const newBoard = applyBarbellEffect(currentBoard);
+        setIsAnimating(true);
+        setTimeout(() => {
+          setBoard(newBoard);
+          setIsAnimating(false);
+        }, 500);
       } else if (type === "friendlyTeam") {
-        newBoard = applyFriendlyTeamEffect(currentBoard);
+        const newBoard = applyFriendlyTeamEffect(currentBoard);
+        setIsAnimating(true);
+        setTimeout(() => {
+          setBoard(newBoard);
+          setIsAnimating(false);
+        }, 500);
+      } else if (type === "careerGrowth") {
+        const newModifiers = applyCareerGrowthEffect();
+        setModifiers(newModifiers);
+        console.log("Модификаторы активированы:", newModifiers);
       }
 
-      setIsAnimating(true);
-      setTimeout(() => {
-        setBoard(newBoard);
-        setIsAnimating(false);
-      }, 500);
-
+      console.log(`Использован бонус: ${type}`);
     },
-    [setBonuses, setBoard, setIsAnimating]
+    [setBonuses, setBoard, setIsAnimating, setModifiers]
   );
 
   return {

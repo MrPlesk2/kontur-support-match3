@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Board, Position, Match } from "types";
+import { Board, Position, Match, GameModifiers } from "types";
 import { ANIMATION_DURATION } from "consts";
 import {
   findAllMatches,
@@ -8,6 +8,7 @@ import {
   fillEmptySlots,
   willCreateMatch,
 } from "@utils/game-logic";
+import { resetCareerGrowthModifiers } from "@utils/bonus-effects";
 
 export const useGameActions = (
   board: Board,
@@ -16,7 +17,9 @@ export const useGameActions = (
   setIsAnimating: (animating: boolean) => void,
   setMatches: (matches: Match[]) => void,
   setScore: (updater: (score: number) => number) => void,
-  updateGoals: (matches: Match[]) => void
+  updateGoals: (matches: Match[], modifiers: GameModifiers) => void,
+  modifiers: GameModifiers,
+  setModifiers: (modifiers: GameModifiers) => void
 ) => {
   const areAdjacent = useCallback((pos1: Position, pos2: Position): boolean => {
     const rowDiff = Math.abs(pos1.row - pos2.row);
@@ -29,6 +32,7 @@ export const useGameActions = (
       let boardToProcess = currentBoard;
       let hasMatches = true;
       let roundScore = 0;
+      let usedCareerGrowth = false;
 
       while (hasMatches) {
         const foundMatches = findAllMatches(boardToProcess);
@@ -38,11 +42,16 @@ export const useGameActions = (
           break;
         }
 
-        updateGoals(foundMatches);
+        updateGoals(foundMatches, modifiers);
 
+        const scoreMultiplier = modifiers.doublePoints ? 2 : 1;
         foundMatches.forEach((match) => {
-          roundScore += match.positions.length * 10;
+          roundScore += match.positions.length * 10 * scoreMultiplier;
         });
+
+        if (modifiers.doublePoints || modifiers.doubleGoalProgress) {
+          usedCareerGrowth = true;
+        }
 
         setMatches(foundMatches);
         await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
@@ -66,9 +75,13 @@ export const useGameActions = (
         setScore((prevScore) => prevScore + roundScore);
       }
 
+      if (usedCareerGrowth) {
+        setModifiers(resetCareerGrowthModifiers());
+      }
+
       return boardToProcess;
     },
-    [setBoard, setMatches, setScore, updateGoals]
+    [setBoard, setMatches, setScore, updateGoals, modifiers, setModifiers]
   );
 
   const swapFigures = useCallback(
