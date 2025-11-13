@@ -1,11 +1,6 @@
 import { useCallback } from "react";
 import { Bonus, Board, GameModifiers, ActiveBonus } from "types";
-import {
-  applyFriendlyTeamEffect,
-  applyBarbellEffect,
-  applyCareerGrowthEffect,
-  resetCareerGrowthModifiers,
-} from "@utils/bonus-effects";
+import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 
 export const useBonuses = (
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void,
@@ -17,6 +12,8 @@ export const useBonuses = (
 ) => {
   const handleBonus = useCallback(
     async (type: Bonus["type"], currentBoard: Board) => {
+      const bonusEffect = BONUS_EFFECTS[type];
+
       if (activeBonus && activeBonus.type !== type) {
         return;
       }
@@ -24,8 +21,8 @@ export const useBonuses = (
       if (activeBonus?.type === type && activeBonus.isActive) {
         setActiveBonus(null);
 
-        if (type === "careerGrowth") {
-          setModifiers(resetCareerGrowthModifiers());
+        if (bonusEffect.reset) {
+          setModifiers(bonusEffect.reset());
         }
         return;
       }
@@ -38,7 +35,7 @@ export const useBonuses = (
           return prevBonuses;
         }
 
-        if (type === "barbell" || type === "friendlyTeam") {
+        if (bonusEffect.isInstant) {
           newBonuses[bonusIndex] = {
             ...newBonuses[bonusIndex],
             count: newBonuses[bonusIndex].count - 1,
@@ -50,24 +47,18 @@ export const useBonuses = (
 
       setActiveBonus({ type, isActive: true });
 
-      if (type === "barbell") {
-        const newBoard = applyBarbellEffect(currentBoard);
+      const effectResult = bonusEffect.apply(currentBoard);
+
+      if (bonusEffect.isInstant) {
+        const newBoard = effectResult as Board;
         setIsAnimating(true);
         setTimeout(() => {
           setBoard(newBoard);
           setIsAnimating(false);
           setActiveBonus(null);
         }, 500);
-      } else if (type === "friendlyTeam") {
-        const newBoard = applyFriendlyTeamEffect(currentBoard);
-        setIsAnimating(true);
-        setTimeout(() => {
-          setBoard(newBoard);
-          setIsAnimating(false);
-          setActiveBonus(null);
-        }, 500);
-      } else if (type === "careerGrowth") {
-        const newModifiers = applyCareerGrowthEffect();
+      } else {
+        const newModifiers = effectResult as GameModifiers;
         setModifiers(newModifiers);
       }
     },
@@ -82,10 +73,13 @@ export const useBonuses = (
   );
 
   const deactivateBonus = useCallback(() => {
-    if (activeBonus?.type === "careerGrowth") {
-      setModifiers(resetCareerGrowthModifiers());
+    if (activeBonus) {
+      const bonusEffect = BONUS_EFFECTS[activeBonus.type];
+      if (bonusEffect.reset) {
+        setModifiers(bonusEffect.reset());
+      }
+      setActiveBonus(null);
     }
-    setActiveBonus(null);
   }, [activeBonus, setModifiers, setActiveBonus]);
 
   return {

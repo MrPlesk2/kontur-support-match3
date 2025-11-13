@@ -1,6 +1,4 @@
 export const BONUS_TYPES = [
-  "globe",
-  "barbell",
   "friendlyTeam",
   "careerGrowth",
 ] as const;

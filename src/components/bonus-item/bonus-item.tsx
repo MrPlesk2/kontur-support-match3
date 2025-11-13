@@ -1,5 +1,5 @@
-import { Bonus, ActiveBonus, BonusType } from "types";
-import { BONUS_PATHS } from "consts";
+import { Bonus, ActiveBonus } from "types";
+import { BONUS_PATHS, BONUS_NAMES } from "consts";
 import "./bonus-item.styles.css";
 
 type BonusItemProps = {
@@ -12,21 +12,7 @@ export const BonusItem = ({ bonus, activeBonus, onUse }: BonusItemProps) => {
   const { type, count } = bonus;
 
   const isActive = activeBonus?.type === type && activeBonus.isActive;
-  const isToggleable = type === "careerGrowth";
   const canUse = count > 0 || isActive;
-
-  const getBonusName = (bonusType: BonusType) => {
-    switch (bonusType) {
-      case "friendlyTeam":
-        return "Дружная команда";
-      case "careerGrowth":
-        return "Карьерный рост";
-      case "barbell":
-        return "Штанга";
-      default:
-        return bonusType;
-    }
-  };
 
   const handleClick = () => {
     if (canUse) {
@@ -40,7 +26,6 @@ export const BonusItem = ({ bonus, activeBonus, onUse }: BonusItemProps) => {
         bonus-item 
         ${isActive ? "bonus-item--active" : ""}
         ${!canUse ? "bonus-item--disabled" : ""}
-        ${isToggleable ? "bonus-item--toggleable" : ""}
       `}
       onClick={handleClick}
     >
@@ -48,7 +33,7 @@ export const BonusItem = ({ bonus, activeBonus, onUse }: BonusItemProps) => {
         <img src={BONUS_PATHS[type]} alt={type} className="bonus-icon" />
         <div className="bonus-count">{count}</div>
       </div>
-      <div className="bonus-name">{getBonusName(type)}</div>
+      <div className="bonus-name">{BONUS_NAMES[type]}</div>
     </div>
   );
 };
