@@ -12,6 +12,7 @@ import { INITIAL_MOVES, INITIAL_GOALS, INITIAL_BONUSES } from "consts";
 const initialModifiers: GameModifiers = {
   doublePoints: false,
   doubleGoalProgress: false,
+  extraMoves: 0,
 };
 
 export const useGameState = () => {

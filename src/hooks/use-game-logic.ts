@@ -14,9 +14,9 @@ export const useGameLogic = () => {
     gameState.setBonuses,
     setBoard,
     gameState.setIsAnimating,
-    gameState.setModifiers,
     gameState.activeBonus,
-    gameState.setActiveBonus
+    gameState.setActiveBonus,
+    gameState.setMoves
   );
   const { areAdjacent, swapFigures } = useGameActions(
     board,
@@ -28,13 +28,20 @@ export const useGameLogic = () => {
     updateGoals,
     gameState.modifiers,
     gameState.setModifiers,
+    gameState.activeBonus,
     gameState.setActiveBonus,
     gameState.setBonuses
   );
 
   const handleCellClick = (position: Position) => {
-    if (gameState.isSwapping || gameState.isAnimating || gameState.moves <= 0)
+    if (gameState.isSwapping || gameState.isAnimating) {
       return;
+    }
+
+    const totalMoves = gameState.moves + (gameState.modifiers.extraMoves || 0);
+    if (totalMoves <= 0) {
+      return;
+    }
 
     if (!gameState.selectedPosition) {
       gameState.setSelectedPosition(position);
@@ -44,7 +51,7 @@ export const useGameLogic = () => {
           gameState.selectedPosition,
           position,
           gameState.moves,
-          gameState.setMoves
+          gameState.setMoves,
         );
       }
       gameState.setSelectedPosition(null);
@@ -52,8 +59,15 @@ export const useGameLogic = () => {
   };
 
   const handleDragStart = (position: Position) => {
-    if (gameState.isSwapping || gameState.isAnimating || gameState.moves <= 0)
+    if (gameState.isSwapping || gameState.isAnimating) {
       return;
+    }
+
+    const totalMoves = gameState.moves + (gameState.modifiers.extraMoves || 0);
+    if (totalMoves <= 0) {
+      return;
+    }
+
     gameState.setSelectedPosition(position);
   };
 
@@ -61,24 +75,31 @@ export const useGameLogic = () => {
     if (
       !gameState.selectedPosition ||
       gameState.isSwapping ||
-      gameState.isAnimating ||
-      gameState.moves <= 0
-    )
+      gameState.isAnimating
+    ) {
       return;
+    }
+
+    const totalMoves = gameState.moves + (gameState.modifiers.extraMoves || 0);
+    if (totalMoves <= 0) {
+      return;
+    }
 
     if (areAdjacent(gameState.selectedPosition, position)) {
       swapFigures(
         gameState.selectedPosition,
         position,
         gameState.moves,
-        gameState.setMoves
+        gameState.setMoves,
       );
       gameState.setSelectedPosition(null);
     }
   };
 
   const handleUseBonus = (type: Bonus["type"]) => {
-    if (gameState.isAnimating) return;
+    if (gameState.isAnimating) {
+      return;
+    }
     handleBonus(type, board);
   };
 
@@ -95,6 +116,7 @@ export const useGameLogic = () => {
     goals: gameState.goals,
     bonuses: gameState.bonuses,
     activeBonus: gameState.activeBonus,
+    modifiers: gameState.modifiers,
 
     handleCellClick,
     handleDragStart,

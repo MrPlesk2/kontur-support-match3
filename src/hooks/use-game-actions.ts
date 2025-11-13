@@ -8,7 +8,7 @@ import {
   fillEmptySlots,
   willCreateMatch,
 } from "@utils/game-logic";
-import { resetCareerGrowthModifiers } from "@utils/bonus-effects";
+import { BONUS_EFFECTS } from "@utils/bonus-effects";
 
 export const useGameActions = (
   board: Board,
@@ -20,6 +20,7 @@ export const useGameActions = (
   updateGoals: (matches: Match[], modifiers: GameModifiers) => void,
   modifiers: GameModifiers,
   setModifiers: (modifiers: GameModifiers) => void,
+  activeBonus: ActiveBonus | null,
   setActiveBonus: (bonus: ActiveBonus | null) => void,
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void
 ) => {
@@ -34,7 +35,7 @@ export const useGameActions = (
       let boardToProcess = currentBoard;
       let hasMatches = true;
       let roundScore = 0;
-      let usedCareerGrowth = false;
+      let usedModifiers = false;
 
       while (hasMatches) {
         const foundMatches = findAllMatches(boardToProcess);
@@ -52,7 +53,7 @@ export const useGameActions = (
         });
 
         if (modifiers.doublePoints || modifiers.doubleGoalProgress) {
-          usedCareerGrowth = true;
+          usedModifiers = true;
         }
 
         setMatches(foundMatches);
@@ -77,25 +78,32 @@ export const useGameActions = (
         setScore((prevScore) => prevScore + roundScore);
       }
 
-      if (usedCareerGrowth) {
-        setModifiers(resetCareerGrowthModifiers());
+      if (usedModifiers && activeBonus) {
+        const bonusEffect = BONUS_EFFECTS[activeBonus.type];
+
+        if (bonusEffect.reset) {
+          setModifiers(bonusEffect.reset());
+        }
+
         setActiveBonus(null);
 
-        setBonuses((prevBonuses) => {
-          const newBonuses = [...prevBonuses];
-          const bonusIndex = newBonuses.findIndex(
-            (bonus) => bonus.type === "careerGrowth"
-          );
+        if (!bonusEffect.isInstant) {
+          setBonuses((prevBonuses) => {
+            const newBonuses = [...prevBonuses];
+            const bonusIndex = newBonuses.findIndex(
+              (bonus) => bonus.type === activeBonus.type
+            );
 
-          if (bonusIndex !== -1 && newBonuses[bonusIndex].count > 0) {
-            newBonuses[bonusIndex] = {
-              ...newBonuses[bonusIndex],
-              count: newBonuses[bonusIndex].count - 1,
-            };
-          }
+            if (bonusIndex !== -1 && newBonuses[bonusIndex].count > 0) {
+              newBonuses[bonusIndex] = {
+                ...newBonuses[bonusIndex],
+                count: newBonuses[bonusIndex].count - 1,
+              };
+            }
 
-          return newBonuses;
-        });
+            return newBonuses;
+          });
+        }
 
       }
 
@@ -110,6 +118,7 @@ export const useGameActions = (
       setModifiers,
       setActiveBonus,
       setBonuses,
+      activeBonus,
     ]
   );
 

@@ -1,14 +1,14 @@
 import { useCallback } from "react";
-import { Bonus, Board, GameModifiers, ActiveBonus } from "types";
+import { Bonus, Board, ActiveBonus } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 
 export const useBonuses = (
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void,
   setBoard: (board: Board) => void,
   setIsAnimating: (animating: boolean) => void,
-  setModifiers: (modifiers: GameModifiers) => void,
   activeBonus: ActiveBonus | null,
-  setActiveBonus: (bonus: ActiveBonus | null) => void
+  setActiveBonus: (bonus: ActiveBonus | null) => void,
+  setMoves: (updater: (moves: number) => number) => void
 ) => {
   const handleBonus = useCallback(
     async (type: Bonus["type"], currentBoard: Board) => {
@@ -20,10 +20,6 @@ export const useBonuses = (
 
       if (activeBonus?.type === type && activeBonus.isActive) {
         setActiveBonus(null);
-
-        if (bonusEffect.reset) {
-          setModifiers(bonusEffect.reset());
-        }
         return;
       }
 
@@ -35,22 +31,23 @@ export const useBonuses = (
           return prevBonuses;
         }
 
-        if (bonusEffect.isInstant) {
-          newBonuses[bonusIndex] = {
-            ...newBonuses[bonusIndex],
-            count: newBonuses[bonusIndex].count - 1,
-          };
-        }
+        newBonuses[bonusIndex] = {
+          ...newBonuses[bonusIndex],
+          count: newBonuses[bonusIndex].count - 1,
+        };
 
         return newBonuses;
       });
 
       setActiveBonus({ type, isActive: true });
 
-      const effectResult = bonusEffect.apply(currentBoard);
+      const newBoard = bonusEffect.apply(currentBoard);
 
       if (bonusEffect.isInstant) {
-        const newBoard = effectResult as Board;
+        if (bonusEffect.onApply) {
+          bonusEffect.onApply(setMoves);
+        }
+
         setIsAnimating(true);
         setTimeout(() => {
           setBoard(newBoard);
@@ -58,29 +55,22 @@ export const useBonuses = (
           setActiveBonus(null);
         }, 500);
       } else {
-        const newModifiers = effectResult as GameModifiers;
-        setModifiers(newModifiers);
+        setBoard(newBoard);
       }
     },
     [
       setBonuses,
       setBoard,
       setIsAnimating,
-      setModifiers,
       activeBonus,
       setActiveBonus,
+      setMoves,
     ]
   );
 
   const deactivateBonus = useCallback(() => {
-    if (activeBonus) {
-      const bonusEffect = BONUS_EFFECTS[activeBonus.type];
-      if (bonusEffect.reset) {
-        setModifiers(bonusEffect.reset());
-      }
-      setActiveBonus(null);
-    }
-  }, [activeBonus, setModifiers, setActiveBonus]);
+    setActiveBonus(null);
+  }, [setActiveBonus]);
 
   return {
     handleBonus,
