@@ -1,0 +1,20 @@
+.bsc-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bsc-title {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+  text-align: center;
+  font-weight: 600;
+}
+
+.bsc-hint {
+  text-align: center;
+  color: #2291FF;
+  font-weight: 600;
+  font-size: 14px;
+}

@@ -9,11 +9,9 @@ import { useBonuses } from "./use-bonuses";
 import { useGameActions } from "./use-game-actions";
 
 export const useGameLogic = () => {
-  // Состояния
   const { board, setBoard } = useBoardState();
   const gameState = useGameState();
 
-  // Состояние уровней
   const [levelState, setLevelState] = useState<LevelState>({
     currentLevel: 1,
     isLevelComplete: false,
@@ -21,11 +19,9 @@ export const useGameLogic = () => {
     selectedBonuses: [],
   });
 
-  // Получаем текущий уровень
   const currentLevel =
     LEVELS.find((level) => level.id === levelState.currentLevel) || LEVELS[0];
 
-  // Логика
   const { updateGoals } = useGoals(gameState.setGoals);
   const { handleBonus, deactivateBonus } = useBonuses(
     gameState.setBonuses,
@@ -50,11 +46,9 @@ export const useGameLogic = () => {
     gameState.setBonuses
   );
 
-  // Проверка завершения уровня
   useEffect(() => {
     if (levelState.isLevelComplete) return;
 
-    // Используем актуальные цели из gameState, а не из currentLevel
     const allGoalsCompleted = gameState.goals.every(
       (goal) => goal.collected >= goal.target
     );
@@ -85,16 +79,13 @@ export const useGameLogic = () => {
     currentLevel,
   ]);
 
-  // Инициализация целей при загрузке
   useEffect(() => {
-    // Устанавливаем цели из текущего уровня при первом рендере
     if (gameState.goals.length === 0) {
       gameState.setGoals(currentLevel.goals);
       gameState.setMoves(currentLevel.moves);
     }
-  }, []);
+  });
 
-  // Обработчики событий
   const handleCellClick = (position: Position) => {
     if (
       gameState.isSwapping ||
@@ -154,7 +145,6 @@ export const useGameLogic = () => {
     }
   };
 
-  // Функция для использования бонуса
   const handleUseBonus = (type: Bonus["type"]) => {
     if (gameState.isAnimating || levelState.isLevelTransition) {
       return;
@@ -162,13 +152,11 @@ export const useGameLogic = () => {
     handleBonus(type, board);
   };
 
-  // Функция начала нового уровня
   const handleLevelStart = (selectedBonuses: BonusType[]) => {
     const nextLevel = levelState.currentLevel + 1;
     const nextLevelData = LEVELS.find((level) => level.id === nextLevel);
 
     if (!nextLevelData) {
-      // Игра завершена - просто остаемся на последнем уровне
       setLevelState((prev) => ({
         ...prev,
         isLevelComplete: false,
@@ -177,7 +165,6 @@ export const useGameLogic = () => {
       return;
     }
 
-    // Сбрасываем состояние для нового уровня
     gameState.setGoals(nextLevelData.goals);
     gameState.setMoves(nextLevelData.moves);
     gameState.setScore(0);
@@ -191,7 +178,6 @@ export const useGameLogic = () => {
       selectedBonuses,
     }));
 
-    // Пересоздаем доску
     const newBoard = createInitialBoard();
     setBoard(newBoard);
   };
@@ -199,7 +185,6 @@ export const useGameLogic = () => {
   const resetSelection = () => gameState.setSelectedPosition(null);
 
   return {
-    // Состояние
     board,
     selectedPosition: gameState.selectedPosition,
     isSwapping: gameState.isSwapping,
@@ -212,11 +197,9 @@ export const useGameLogic = () => {
     activeBonus: gameState.activeBonus,
     modifiers: gameState.modifiers,
 
-    // Уровни
     levelState,
     currentLevel,
 
-    // Действия
     handleCellClick,
     handleDragStart,
     handleDragOver,
