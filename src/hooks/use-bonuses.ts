@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Bonus, Board, ActiveBonus } from "types";
+import { Bonus, Board, ActiveBonus, GameModifiers } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 
 export const useBonuses = (
@@ -8,29 +8,49 @@ export const useBonuses = (
   setIsAnimating: (animating: boolean) => void,
   activeBonus: ActiveBonus | null,
   setActiveBonus: (bonus: ActiveBonus | null) => void,
-  setMoves: (updater: (moves: number) => number) => void
+  setMoves: (updater: (moves: number) => number) => void,
+  setModifiers: (modifiers: GameModifiers) => void
 ) => {
   const handleBonus = useCallback(
     async (type: Bonus["type"], currentBoard: Board) => {
       const bonusEffect = BONUS_EFFECTS[type];
 
-      if (activeBonus && activeBonus.type !== type) {
+      if (activeBonus?.type === type && activeBonus.isActive) {
+        setActiveBonus(null);
+
+        if (bonusEffect.reset) {
+          setModifiers(bonusEffect.reset());
+        }
         return;
       }
 
-      if (activeBonus?.type === type && activeBonus.isActive) {
+      if (activeBonus && activeBonus.type !== type) {
+        const previousBonusEffect = BONUS_EFFECTS[activeBonus.type];
+        if (previousBonusEffect.reset) {
+          setModifiers(previousBonusEffect.reset());
+        }
         setActiveBonus(null);
-        return;
       }
 
       setBonuses((prevBonuses) => {
-        const newBonuses = [...prevBonuses];
-        const bonusIndex = newBonuses.findIndex((bonus) => bonus.type === type);
+        const bonusIndex = prevBonuses.findIndex(
+          (bonus) => bonus.type === type
+        );
 
-        if (bonusIndex === -1 || newBonuses[bonusIndex].count <= 0) {
+        if (bonusIndex === -1 || prevBonuses[bonusIndex].count <= 0) {
           return prevBonuses;
         }
 
+        if (!bonusEffect.isInstant) {
+          setActiveBonus({ type, isActive: true });
+
+          if (bonusEffect.applyModifiers) {
+            setModifiers(bonusEffect.applyModifiers());
+          }
+          return prevBonuses;
+        }
+
+        const newBonuses = [...prevBonuses];
         newBonuses[bonusIndex] = {
           ...newBonuses[bonusIndex],
           count: newBonuses[bonusIndex].count - 1,
@@ -39,11 +59,9 @@ export const useBonuses = (
         return newBonuses;
       });
 
-      setActiveBonus({ type, isActive: true });
-
-      const newBoard = bonusEffect.apply(currentBoard);
-
       if (bonusEffect.isInstant) {
+        const newBoard = bonusEffect.apply(currentBoard);
+
         if (bonusEffect.onApply) {
           bonusEffect.onApply(setMoves);
         }
@@ -52,10 +70,7 @@ export const useBonuses = (
         setTimeout(() => {
           setBoard(newBoard);
           setIsAnimating(false);
-          setActiveBonus(null);
         }, 500);
-      } else {
-        setBoard(newBoard);
       }
     },
     [
@@ -65,12 +80,19 @@ export const useBonuses = (
       activeBonus,
       setActiveBonus,
       setMoves,
+      setModifiers,
     ]
   );
 
   const deactivateBonus = useCallback(() => {
-    setActiveBonus(null);
-  }, [setActiveBonus]);
+    if (activeBonus) {
+      const bonusEffect = BONUS_EFFECTS[activeBonus.type];
+      if (bonusEffect.reset) {
+        setModifiers(bonusEffect.reset());
+      }
+      setActiveBonus(null);
+    }
+  }, [activeBonus, setActiveBonus, setModifiers]);
 
   return {
     handleBonus,

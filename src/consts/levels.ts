@@ -8,7 +8,7 @@ export const LEVELS: Level[] = [
     goals: [
       { figure: "pencil", target: 1, collected: 0 },
       { figure: "bonnet", target: 1, collected: 0 },
-      { figure: "apple", target: 1, collected: 0 },
+      { figure: "briefcase", target: 1, collected: 0 },
     ],
     moves: 15,
     requiredScore: 100,
@@ -20,7 +20,7 @@ export const LEVELS: Level[] = [
     goals: [
       { figure: "pencil", target: 1, collected: 0 },
       { figure: "bonnet", target: 1, collected: 0 },
-      { figure: "apple", target: 2, collected: 0 },
+      { figure: "briefcase", target: 2, collected: 0 },
     ],
     moves: 20,
     requiredScore: 250,
@@ -32,7 +32,7 @@ export const LEVELS: Level[] = [
     goals: [
       { figure: "pencil", target: 15, collected: 0 },
       { figure: "bonnet", target: 12, collected: 0 },
-      { figure: "apple", target: 10, collected: 0 },
+      { figure: "briefcase", target: 10, collected: 0 },
     ],
     moves: 18,
     requiredScore: 400,

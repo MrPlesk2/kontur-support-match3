@@ -1,5 +1,13 @@
 import { useCallback } from "react";
-import { Board, Position, Match, GameModifiers, ActiveBonus, Bonus } from "types";
+import {
+  Board,
+  Position,
+  Match,
+  GameModifiers,
+  ActiveBonus,
+  Bonus,
+  Goal,
+} from "types";
 import { ANIMATION_DURATION } from "consts";
 import {
   findAllMatches,
@@ -9,6 +17,10 @@ import {
   willCreateMatch,
 } from "@utils/game-logic";
 import { BONUS_EFFECTS } from "@utils/bonus-effects";
+import {
+  updateGoalsWithModifiers,
+  calculateRoundScore,
+} from "@utils/modifiers-utils";
 
 export const useGameActions = (
   board: Board,
@@ -17,7 +29,7 @@ export const useGameActions = (
   setIsAnimating: (animating: boolean) => void,
   setMatches: (matches: Match[]) => void,
   setScore: (updater: (score: number) => number) => void,
-  updateGoals: (matches: Match[], modifiers: GameModifiers) => void,
+  setGoals: (updater: (goals: Goal[]) => Goal[]) => void, // Заменяем updateGoals на setGoals
   modifiers: GameModifiers,
   setModifiers: (modifiers: GameModifiers) => void,
   activeBonus: ActiveBonus | null,
@@ -34,7 +46,7 @@ export const useGameActions = (
     async (currentBoard: Board): Promise<Board> => {
       let boardToProcess = currentBoard;
       let hasMatches = true;
-      let roundScore = 0;
+      let totalRoundScore = 0;
       let usedModifiers = false;
 
       while (hasMatches) {
@@ -45,12 +57,12 @@ export const useGameActions = (
           break;
         }
 
-        updateGoals(foundMatches, modifiers);
+        setGoals((prevGoals) =>
+          updateGoalsWithModifiers(prevGoals, foundMatches, modifiers)
+        );
 
-        const scoreMultiplier = modifiers.doublePoints ? 2 : 1;
-        foundMatches.forEach((match) => {
-          roundScore += match.positions.length * 10 * scoreMultiplier;
-        });
+        const roundScore = calculateRoundScore(foundMatches, modifiers);
+        totalRoundScore += roundScore;
 
         if (modifiers.doublePoints || modifiers.doubleGoalProgress) {
           usedModifiers = true;
@@ -74,8 +86,8 @@ export const useGameActions = (
         await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
       }
 
-      if (roundScore > 0) {
-        setScore((prevScore) => prevScore + roundScore);
+      if (totalRoundScore > 0) {
+        setScore((prevScore) => prevScore + totalRoundScore);
       }
 
       if (usedModifiers && activeBonus) {
@@ -104,7 +116,6 @@ export const useGameActions = (
             return newBonuses;
           });
         }
-
       }
 
       return boardToProcess;
@@ -113,7 +124,7 @@ export const useGameActions = (
       setBoard,
       setMatches,
       setScore,
-      updateGoals,
+      setGoals,
       modifiers,
       setModifiers,
       setActiveBonus,

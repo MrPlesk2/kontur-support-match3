@@ -4,7 +4,6 @@ import { LEVELS } from "consts/levels";
 import { createInitialBoard } from "@utils/game-logic";
 import { useBoardState } from "./use-board-state";
 import { useGameState } from "./use-game-state";
-import { useGoals } from "./use-goals";
 import { useBonuses } from "./use-bonuses";
 import { useGameActions } from "./use-game-actions";
 
@@ -22,14 +21,14 @@ export const useGameLogic = () => {
   const currentLevel =
     LEVELS.find((level) => level.id === levelState.currentLevel) || LEVELS[0];
 
-  const { updateGoals } = useGoals(gameState.setGoals);
   const { handleBonus, deactivateBonus } = useBonuses(
     gameState.setBonuses,
     setBoard,
     gameState.setIsAnimating,
     gameState.activeBonus,
     gameState.setActiveBonus,
-    gameState.setMoves
+    gameState.setMoves,
+    gameState.setModifiers
   );
   const { areAdjacent, swapFigures } = useGameActions(
     board,
@@ -38,12 +37,12 @@ export const useGameLogic = () => {
     gameState.setIsAnimating,
     gameState.setMatches,
     gameState.setScore,
-    updateGoals,
+    gameState.setGoals,
     gameState.modifiers,
     gameState.setModifiers,
     gameState.activeBonus,
     gameState.setActiveBonus,
-    gameState.setBonuses
+    gameState.setBonuses,
   );
 
   useEffect(() => {
@@ -54,14 +53,6 @@ export const useGameLogic = () => {
     );
 
     const scoreReached = gameState.score >= currentLevel.requiredScore;
-
-    console.log("Проверка завершения уровня:", {
-      goals: gameState.goals,
-      allGoalsCompleted,
-      score: gameState.score,
-      requiredScore: currentLevel.requiredScore,
-      scoreReached,
-    });
 
     if (allGoalsCompleted && scoreReached) {
       setTimeout(() => {

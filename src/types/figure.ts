@@ -2,7 +2,7 @@ export const FIGURES = [
   "pencil",
   "questionBook",
   "openBook",
-  "apple",
+  "briefcase",
   "bonnet",
 ] as const;
 
