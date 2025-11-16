@@ -12,6 +12,7 @@ export const useGameLogic = () => {
   const { levelState, currentLevel, handleLevelStart } = useLevelManagement({
     setBoard,
     gameState,
+    isAnimating: gameState.isAnimating,
   });
 
   const { handleBonus, deactivateBonus } = useBonuses(

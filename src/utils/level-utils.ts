@@ -15,10 +15,6 @@ export const getLevelMoves = (levelId: number): number => {
   return level ? level.moves : 10;
 };
 
-export const getLevelRequiredScore = (levelId: number): number => {
-  const level = getLevelById(levelId);
-  return level ? level.requiredScore : 0;
-};
 
 export const getNextLevelId = (currentLevelId: number): number | null => {
   const nextLevel = LEVELS.find((level) => level.id === currentLevelId + 1);

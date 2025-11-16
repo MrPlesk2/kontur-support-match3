@@ -6,5 +6,4 @@ export type Level = {
   description: string;
   goals: Goal[];
   moves: number;
-  requiredScore: number;
 };

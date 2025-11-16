@@ -8,9 +8,10 @@ type GoalItemProps = {
 
 export const GoalItem = ({ goal }: GoalItemProps) => {
   const { figure, collected, target } = goal;
+  const isCompleted = collected >= target;
 
   return (
-    <div className="goal-item">
+    <div className={`goal-item ${isCompleted ? "goal-item--completed" : ""}`}>
       <img src={FIGURE_PATHS[figure]} alt={figure} className="goal-figure" />
       <div className="goal-progress">
         {collected}/{target}

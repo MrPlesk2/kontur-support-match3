@@ -7,13 +7,16 @@ import { createInitialBoard } from "@utils/game-logic";
 type UseLevelManagementProps = {
   setBoard: (board: Board) => void;
   gameState: GameState;
+  isAnimating: boolean;
 };
 
 export const useLevelManagement = ({
   setBoard,
   gameState,
+  isAnimating,
 }: UseLevelManagementProps) => {
   const isLevelInitialized = useRef(false);
+  const [completionTriggered, setCompletionTriggered] = useState(false);
 
   const [levelState, setLevelState] = useState<LevelState>({
     currentLevel: 1,
@@ -38,27 +41,32 @@ export const useLevelManagement = ({
       (goal) => goal.collected >= goal.target
     );
 
+    if (allGoalsCompleted && !isAnimating && !completionTriggered) {
+      setCompletionTriggered(true);
 
-    if (allGoalsCompleted) {
-
-      setLevelState((prev) => ({
-        ...prev,
-        isLevelComplete: true,
-        isLevelTransition: true,
-      }));
-
-      isLevelInitialized.current = false;
+      setTimeout(() => {
+        setLevelState((prev) => ({
+          ...prev,
+          isLevelComplete: true,
+          isLevelTransition: true,
+        }));
+        isLevelInitialized.current = false;
+        setCompletionTriggered(false);
+      }, 300);
     }
   }, [
     gameState.goals,
     levelState.isLevelTransition,
     levelState.isLevelComplete,
     levelState.currentLevel,
+    isAnimating,
+    completionTriggered,
   ]);
 
   useEffect(() => {
     if (levelState.isLevelTransition) {
       isLevelInitialized.current = false;
+      setCompletionTriggered(false);
       return;
     }
 
@@ -99,6 +107,7 @@ export const useLevelManagement = ({
     setBoard(newBoard);
 
     isLevelInitialized.current = true;
+    setCompletionTriggered(false);
   }, [
     levelState.currentLevel,
     levelState.isLevelTransition,
@@ -131,6 +140,7 @@ export const useLevelManagement = ({
     });
 
     isLevelInitialized.current = false;
+    setCompletionTriggered(false);
   };
 
   return {

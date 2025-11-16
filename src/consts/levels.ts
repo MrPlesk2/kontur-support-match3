@@ -11,7 +11,6 @@ export const LEVELS: Level[] = [
       { figure: "briefcase", target: 3, collected: 0 },
     ],
     moves: 21,
-    requiredScore: 100,
   },
   {
     id: 2,
@@ -23,7 +22,6 @@ export const LEVELS: Level[] = [
       { figure: "briefcase", target: 3, collected: 0 },
     ],
     moves: 22,
-    requiredScore: 250,
   },
   {
     id: 3,
@@ -35,7 +33,6 @@ export const LEVELS: Level[] = [
       { figure: "briefcase", target: 5, collected: 0 },
     ],
     moves: 23,
-    requiredScore: 400,
   },
 ];
 
