@@ -6,11 +6,11 @@ export const LEVELS: Level[] = [
     name: "Новичок",
     description: "Начни свой путь в IT!",
     goals: [
-      { figure: "pencil", target: 9, collected: 0 },
-      { figure: "bonnet", target: 10, collected: 0 },
-      { figure: "briefcase", target: 9, collected: 0 },
+      { figure: "pencil", target: 3, collected: 0 },
+      { figure: "bonnet", target: 3, collected: 0 },
+      { figure: "briefcase", target: 3, collected: 0 },
     ],
-    moves: 15,
+    moves: 21,
     requiredScore: 100,
   },
   {
@@ -18,11 +18,11 @@ export const LEVELS: Level[] = [
     name: "Консультант",
     description: "Ты освоил основы!",
     goals: [
-      { figure: "pencil", target: 1, collected: 0 },
-      { figure: "bonnet", target: 1, collected: 0 },
-      { figure: "briefcase", target: 2, collected: 0 },
+      { figure: "pencil", target: 5, collected: 0 },
+      { figure: "bonnet", target: 4, collected: 0 },
+      { figure: "briefcase", target: 3, collected: 0 },
     ],
-    moves: 20,
+    moves: 22,
     requiredScore: 250,
   },
   {
@@ -30,11 +30,11 @@ export const LEVELS: Level[] = [
     name: "Специалист",
     description: "Растёшь над собой!",
     goals: [
-      { figure: "pencil", target: 15, collected: 0 },
-      { figure: "bonnet", target: 12, collected: 0 },
-      { figure: "briefcase", target: 10, collected: 0 },
+      { figure: "pencil", target: 3, collected: 0 },
+      { figure: "bonnet", target: 4, collected: 0 },
+      { figure: "briefcase", target: 5, collected: 0 },
     ],
-    moves: 18,
+    moves: 23,
     requiredScore: 400,
   },
 ];
@@ -45,18 +45,4 @@ export const LEVEL_NAMES: Record<number, string> = {
   3: "Специалист",
   4: "Эксперт",
   5: "Тимлид",
-};
-
-export const getFirstLevelGoals = () => {
-  const firstLevel = LEVELS.find((level) => level.id === 1);
-  return firstLevel ? firstLevel.goals : [];
-};
-
-export const getLevelById = (id: number): Level | undefined => {
-  return LEVELS.find((level) => level.id === id);
-};
-
-export const getFirstLevelMoves = () => {
-  const firstLevel = LEVELS.find((level) => level.id === 1);
-  return firstLevel ? firstLevel.moves : 10;
 };

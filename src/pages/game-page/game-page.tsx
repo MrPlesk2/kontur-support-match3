@@ -10,18 +10,20 @@ import "./game-page.styles.css";
 export default function GamePage() {
   const gameLogic = useGameLogic();
 
-  // Если переход между уровнями
   if (gameLogic.levelState.isLevelTransition) {
+    const nextLevel = gameLogic.levelState.isLevelComplete
+      ? gameLogic.levelState.currentLevel + 1
+      : gameLogic.levelState.currentLevel;
+
     return (
       <LevelTransition
         currentLevel={gameLogic.levelState.currentLevel}
-        nextLevel={gameLogic.levelState.currentLevel + 1}
+        nextLevel={nextLevel}
         onLevelStart={gameLogic.handleLevelStart}
       />
     );
   }
 
-  // Основной игровой экран
   return (
     <div className="page">
       <div className="game-main">

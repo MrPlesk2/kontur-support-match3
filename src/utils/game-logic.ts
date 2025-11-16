@@ -47,6 +47,11 @@ export const createInitialBoard = (): Board => {
     board.push(boardRow);
   }
 
+  const matches = findAllMatches(board);
+  if (matches.length > 0) {
+    return shuffleBoardWithoutMatches(board);
+  }
+
   return board;
 };
 
