@@ -7,7 +7,11 @@ import {
   GameModifiers,
   ActiveBonus,
 } from "types";
-import { INITIAL_MOVES, INITIAL_GOALS, INITIAL_BONUSES } from "consts";
+import {
+  getFirstLevelGoals,
+  getFirstLevelMoves,
+  INITIAL_BONUSES,
+} from "consts";
 
 const initialModifiers: GameModifiers = {
   doublePoints: false,
@@ -23,11 +27,11 @@ export const useGameState = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [score, setScore] = useState(0);
-  const [moves, setMoves] = useState(INITIAL_MOVES);
-  const [goals, setGoals] = useState<Goal[]>(INITIAL_GOALS);
+  const [moves, setMoves] = useState(getFirstLevelMoves());
+  const [goals, setGoals] = useState<Goal[]>(getFirstLevelGoals());
   const [bonuses, setBonuses] = useState<Bonus[]>(INITIAL_BONUSES);
   const [modifiers, setModifiers] = useState<GameModifiers>(initialModifiers);
-  const [activeBonus, setActiveBonus] = useState<ActiveBonus | null>(null); // Добавляем активный бонус
+  const [activeBonus, setActiveBonus] = useState<ActiveBonus | null>(null);
 
   return {
     selectedPosition,
