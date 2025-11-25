@@ -103,6 +103,41 @@ export const LEVELS: Level[] = [
       { row: 3, col: 6, type: "golden", isActive: true },
     ],
   },
+  {
+    id: 5,
+    name: "Тимлид",
+    description: "Растёшь над собой!",
+    goals: [
+      {
+        figure: "teamCell",
+        target: 14,
+        collected: 0,
+      }
+    ],
+    moves: 23,
+    availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
+    teamPositions: [
+      // Начальные позиции звезд
+      { row: 2, col: 2 },
+      { row: 2, col: 3 },
+      { row: 2, col: 4 },
+      { row: 3, col: 2 },
+      { row: 3, col: 3 },
+      { row: 3, col: 4 },
+    ],
+    specialCells: [
+      { row: 1, col: 2, type: "team", isActive: true },
+      { row: 1, col: 3, type: "team", isActive: true },
+      { row: 1, col: 4, type: "team", isActive: true },
+      { row: 4, col: 2, type: "team", isActive: true },
+      { row: 4, col: 3, type: "team", isActive: true },
+      { row: 4, col: 4, type: "team", isActive: true },
+      { row: 2, col: 1, type: "team", isActive: true },
+      { row: 3, col: 1, type: "team", isActive: true },
+      { row: 2, col: 5, type: "team", isActive: true },
+      { row: 3, col: 5, type: "team", isActive: true },
+    ],
+  },
 ];
 
 export const LEVEL_NAMES: Record<number, string> = {

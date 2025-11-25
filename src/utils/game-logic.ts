@@ -5,6 +5,7 @@ import {
   updateBoardAfterMatches,
   applyGravity,
   willCreateMatch,
+  applyHorizontalGravity
 } from "@utils/game-utils";
 import { shuffleBoardWithoutMatches } from "@utils/board-utils";
 
@@ -29,10 +30,17 @@ export const createInitialBoard = (level?: Level): Board => {
       }
     });
   }
+  if (level?.teamPositions) {
+    level.teamPositions.forEach((position: Position) => {
+      if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
+        board[position.row][position.col] = "team";
+      }
+    });
+  }
 
   for (let row = 0; row < BOARD_ROWS; row++) {
     for (let col = 0; col < BOARD_COLS; col++) {
-      if (board[row][col] === "star") continue;
+      if (board[row][col] === "star" || board[row][col] === "team") continue;
 
       let figure: Figure;
       let attempts = 0;
@@ -43,7 +51,7 @@ export const createInitialBoard = (level?: Level): Board => {
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
         attempts++;
 
-        if (figure === "star") continue;
+        if (figure === "star" || figure === "team") continue;
 
         const horizontalMatch =
           col >= 2 &&
@@ -64,7 +72,7 @@ export const createInitialBoard = (level?: Level): Board => {
       if (!validFigure) {
         const randomFigure =
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
-        board[row][col] = randomFigure === "star" ? "pencil" : randomFigure;
+        board[row][col] = randomFigure === "star" || "team" ? "pencil" : randomFigure;
       }
     }
   }
@@ -90,14 +98,16 @@ export const fillEmptySlots = (board: Board, level?: Level): Board => {
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = 0; row < BOARD_ROWS; row++) {
       if (newBoard[row][col] === null) {
-        const figuresWithoutStars = availableFigures.filter(
-          (fig) => fig !== "star"
+        const figuresWithoutStarsAndTeam = availableFigures.filter(
+          (fig) => fig !== "star" && fig !== "team"
         );
         const randomFigure =
-          figuresWithoutStars[
-            Math.floor(Math.random() * figuresWithoutStars.length)
+          figuresWithoutStarsAndTeam[
+            Math.floor(Math.random() * figuresWithoutStarsAndTeam.length)
           ];
         newBoard[row][col] = randomFigure;
+      } else {
+        break;
       }
     }
   }
@@ -111,4 +121,5 @@ export {
   applyGravity,
   willCreateMatch,
   shuffleBoardWithoutMatches,
+  applyHorizontalGravity,
 };

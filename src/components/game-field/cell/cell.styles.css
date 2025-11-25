@@ -53,6 +53,26 @@
   animation: goldenMatchAnimation 0.5s ease;
 }
 
+.cell--team {
+  background: linear-gradient(135deg, #39dd39, #46df46);
+  box-shadow: inset 0 0 12px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cell--team:hover {
+  background: linear-gradient(135deg, #34ca34, #36a336);
+  transform: scale(1.05);
+}
+
+.cell--team.cell--selected {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  box-shadow: 0 0 0 2px #2196f3, inset 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.cell--team.cell--matched {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  animation: goldenMatchAnimation 0.5s ease;
+}
+
 .cell:active {
   transform: scale(0.95);
 }
