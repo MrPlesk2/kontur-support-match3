@@ -13,6 +13,7 @@ export const FIGURE_PATHS: Record<Figure, string> = {
   smartphone: "src/assets/images/figures/smartphone.svg",
   goldenCell: "src/assets/images/figures/goldenCell.svg",
   star: "src/assets/images/figures/star.svg",
+  diamond: "src/assets/images/figures/star.svg",
   teamCell: "src/assets/images/figures/star.svg",
   team: "src/assets/images/figures/star.svg",
 };

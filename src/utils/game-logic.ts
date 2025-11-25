@@ -30,6 +30,13 @@ export const createInitialBoard = (level?: Level): Board => {
       }
     });
   }
+  if (level?.diamondPositions) {
+    level.diamondPositions.forEach((position: Position) => {
+      if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
+        board[position.row][position.col] = "diamond";
+      }
+    });
+  }
   if (level?.teamPositions) {
     level.teamPositions.forEach((position: Position) => {
       if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
@@ -40,7 +47,7 @@ export const createInitialBoard = (level?: Level): Board => {
 
   for (let row = 0; row < BOARD_ROWS; row++) {
     for (let col = 0; col < BOARD_COLS; col++) {
-      if (board[row][col] === "star" || board[row][col] === "team") continue;
+      if (board[row][col] === "star" || board[row][col] === "diamond" || board[row][col] === "team") continue;
 
       let figure: Figure;
       let attempts = 0;
@@ -51,7 +58,7 @@ export const createInitialBoard = (level?: Level): Board => {
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
         attempts++;
 
-        if (figure === "star" || figure === "team") continue;
+        if (figure === "star" || board[row][col] === "diamond" ||  figure === "team") continue;
 
         const horizontalMatch =
           col >= 2 &&
@@ -72,7 +79,7 @@ export const createInitialBoard = (level?: Level): Board => {
       if (!validFigure) {
         const randomFigure =
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
-        board[row][col] = randomFigure === "star" || "team" ? "pencil" : randomFigure;
+        board[row][col] = randomFigure === "star" || board[row][col] === "diamond" || "team" ? "pencil" : randomFigure;
       }
     }
   }
@@ -98,12 +105,12 @@ export const fillEmptySlots = (board: Board, level?: Level): Board => {
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = 0; row < BOARD_ROWS; row++) {
       if (newBoard[row][col] === null) {
-        const figuresWithoutStarsAndTeam = availableFigures.filter(
-          (fig) => fig !== "star" && fig !== "team"
+        const figuresWithoutStarsAndDiamondsAndTeam = availableFigures.filter(
+          (fig) => fig !== "star" && fig != "diamond" && fig !== "team"
         );
         const randomFigure =
-          figuresWithoutStarsAndTeam[
-            Math.floor(Math.random() * figuresWithoutStarsAndTeam.length)
+          figuresWithoutStarsAndDiamondsAndTeam[
+            Math.floor(Math.random() * figuresWithoutStarsAndDiamondsAndTeam.length)
           ];
         newBoard[row][col] = randomFigure;
       } else {

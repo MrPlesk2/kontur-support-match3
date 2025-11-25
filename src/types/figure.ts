@@ -11,6 +11,7 @@ export const FIGURES = [
   "smartphone",
   "goldenCell",
   "star",
+  "diamond",
   "teamCell",
   "team",
 ] as const;

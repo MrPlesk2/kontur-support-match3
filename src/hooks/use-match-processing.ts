@@ -171,18 +171,20 @@ export const useMatchProcessing = ({
           // -------------------------------------
           setGoals((prevGoals) => {
             const nonSpecial = prevGoals.filter(
-              (g) => !["goldenCell", "teamCell", "star"].includes(g.figure)
+              (g) => !["goldenCell", "teamCell", "star", "diamond"].includes(g.figure)
             );
             const updated = updateGoalsWithModifiers(nonSpecial, foundMatches, modifiers);
 
             const goldenGoal = prevGoals.find((g) => g.figure === "goldenCell");
             const teamGoal = prevGoals.find((g) => g.figure === "teamCell");
             const starGoal = prevGoals.find((g) => g.figure === "star");
+            const diamondGoal = prevGoals.find((g) => g.figure === "diamond");
 
             const result = [...updated];
             if (goldenGoal) result.push(goldenGoal);
             if (teamGoal) result.push(teamGoal);
             if (starGoal) result.push(starGoal);
+            if (diamondGoal) result.push(diamondGoal);
 
             return result;
           });
@@ -220,21 +222,21 @@ export const useMatchProcessing = ({
           boardToProcess = fillEmptySlots(boardToProcess, lvl);
           setBoard(boardToProcess);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-
-          const result = applyHorizontalGravity(boardToProcess);
-          boardToProcess = result.board
-          setBoard(boardToProcess);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-          if (result.isChanged) {
-            boardToProcess = applyGravity(boardToProcess);
+          if (lvl?.id == 5) {
+            const result = applyHorizontalGravity(boardToProcess);
+            boardToProcess = result.board
             setBoard(boardToProcess);
             await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+            if (result.isChanged) {
+              boardToProcess = applyGravity(boardToProcess);
+              setBoard(boardToProcess);
+              await new Promise((r) => setTimeout(r, ANIMATION_DURATION/2));
 
-            boardToProcess = fillEmptySlots(boardToProcess, lvl);
-            setBoard(boardToProcess);
-            await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+              boardToProcess = fillEmptySlots(boardToProcess, lvl);
+              setBoard(boardToProcess);
+              await new Promise((r) => setTimeout(r, ANIMATION_DURATION/2));
+            }
           }
-
           // ---------------------------
           // RESTORE TEAM CELLS ON BOARD so they never disappear
           // After gravity/fill there may be different tiles at those coords,
@@ -256,6 +258,60 @@ export const useMatchProcessing = ({
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
+
+        // ---------------------------
+        // PROCESS DIAMONDS (как STAR)
+        // ---------------------------
+        let diamondsToRemove: Position[] = [];
+        for (let col = 0; col < boardToProcess[0].length; col++) {
+          if (boardToProcess[BOARD_ROWS - 1]?.[col] === "diamond") {
+            diamondsToRemove.push({ row: BOARD_ROWS - 1, col });
+          }
+        }
+
+        if (diamondsToRemove.length > 0) {
+          const collectedDiamonds = diamondsToRemove.length;
+
+          diamondsToRemove.forEach(({ row, col }) => (boardToProcess[row][col] = null));
+
+          // Update diamond goals
+          setGoals((prev) => {
+            const next = [...prev];
+            const idx = next.findIndex((g) => g.figure === "diamond");
+            if (idx !== -1) {
+              const inc = modifiers.doubleGoalProgress ? collectedDiamonds * 2 : collectedDiamonds;
+              next[idx] = {
+                ...next[idx],
+                collected: Math.min(next[idx].collected + inc, next[idx].target),
+              };
+            }
+            return next;
+          });
+
+          boardToProcess = applyGravity(boardToProcess);
+          setBoard([...boardToProcess]);
+          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+
+          const lvl = currentLevel
+            ? { ...currentLevel, specialCells: updatedSpecialCells }
+            : undefined;
+
+          boardToProcess = fillEmptySlots(boardToProcess, lvl);
+          setBoard([...boardToProcess]);
+          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+
+          // Ensure team cells are still present
+          updatedSpecialCells.forEach((sc) => {
+            if (sc.type === "team") {
+              if (boardToProcess[sc.row]) {
+                boardToProcess[sc.row][sc.col] = boardToProcess[sc.row][sc.col] ?? "teamCell";
+              }
+            }
+          });
+          setBoard([...boardToProcess]);
+          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+        }
+
 
         // ---------------------------
         // PROCESS STARS AS BEFORE

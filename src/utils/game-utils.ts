@@ -27,7 +27,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let col = 0;
     while (col < BOARD_COLS - 2) {
       const figure = board[row][col];
-      if (!figure || figure === "star" || figure === "team") {
+      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team") {
         col++;
         continue;
       }
@@ -57,7 +57,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let row = 0;
     while (row < BOARD_ROWS - 2) {
       const figure = board[row][col];
-      if (!figure || figure === "star" || figure === "team") {
+      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team") {
         row++;
         continue;
       }

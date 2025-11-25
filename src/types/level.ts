@@ -12,5 +12,6 @@ export type Level = {
   availableFigures: Figure[];
   specialCells?: SpecialCell[];
   starPositions?: Position[];
+  diamondPositions?: Position[];
   teamPositions?: Position[];
 };

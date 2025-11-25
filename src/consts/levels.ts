@@ -73,7 +73,7 @@ export const LEVELS: Level[] = [
     name: "Эксперт",
     description: "Растёшь над собой!",
     goals: [
-      { figure: "star", target: 5, collected: 0 }, // Цель - собрать 5 звезд
+      { figure: "diamond", target: 5, collected: 0 }, // Цель - собрать 5 звезд
       {
         figure: "goldenCell",
         target: 10,
@@ -82,7 +82,7 @@ export const LEVELS: Level[] = [
     ],
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
-    starPositions: [
+    diamondPositions: [
       // Начальные позиции звезд
       { row: 0, col: 1 },
       { row: 1, col: 2 },
