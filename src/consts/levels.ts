@@ -61,11 +61,11 @@ export const LEVELS: Level[] = [
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     starPositions: [
       // Начальные позиции звезд
-      { row: 0, col: 0 },
-      { row: 0, col: 1 },
-      { row: 0, col: 3 },
-      { row: 0, col: 5 },
-      { row: 0, col: 6 },
+      { row: 3, col: 1 },
+      { row: 0, col: 2 },
+      { row: 3, col: 3 },
+      { row: 0, col: 4 },
+      { row: 3, col: 5 },
     ],
   },
 ];

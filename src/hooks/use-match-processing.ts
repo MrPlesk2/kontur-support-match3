@@ -63,189 +63,193 @@ export const useMatchProcessing = ({
       while (hasMatches) {
         const foundMatches = findAllMatches(boardToProcess);
 
-        let collectedStars = 0;
+        // Сначала обрабатываем обычные матчи
+        if (foundMatches.length > 0) {
+          // Обрабатываем золотые ячейки
+          let collectedGoldenCellsInThisRound = 0;
 
-        if (currentLevel?.id === 3) {
-          const starsInBottomRow: Position[] = [];
+          foundMatches.forEach((match) => {
+            match.positions.forEach((position) => {
+              const specialCellIndex = updatedSpecialCells.findIndex(
+                (cell) =>
+                  cell.row === position.row &&
+                  cell.col === position.col &&
+                  cell.isActive
+              );
 
-          for (let col = 0; col < boardToProcess[0].length; col++) {
-            if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
-              starsInBottomRow.push({ row: BOARD_ROWS - 1, col });
-            }
+              if (specialCellIndex !== -1) {
+                updatedSpecialCells[specialCellIndex] = {
+                  ...updatedSpecialCells[specialCellIndex],
+                  isActive: false,
+                };
+                collectedGoldenCellsInThisRound++;
+              }
+            });
+          });
+
+          if (onSpecialCellsUpdate && updatedSpecialCells.length > 0) {
+            onSpecialCellsUpdate(updatedSpecialCells);
           }
 
-          if (starsInBottomRow.length > 0) {
-            collectedStars = starsInBottomRow.length;
+          if (collectedGoldenCellsInThisRound > 0) {
+            setGoals((prevGoals) => {
+              const newGoals = [...prevGoals];
+              const goldenGoalIndex = newGoals.findIndex(
+                (goal) => goal.figure === "goldenCell"
+              );
 
-            starsInBottomRow.forEach(({ row, col }) => {
-              boardToProcess[row][col] = null;
-            });
+              if (goldenGoalIndex !== -1) {
+                const progressIncrease = modifiers.doubleGoalProgress
+                  ? collectedGoldenCellsInThisRound * 2
+                  : collectedGoldenCellsInThisRound;
 
-            if (collectedStars > 0) {
-              setGoals((prevGoals) => {
-                const newGoals = [...prevGoals];
-                const starGoalIndex = newGoals.findIndex(
-                  (goal) => goal.figure === "star"
+                const newCollected = Math.min(
+                  newGoals[goldenGoalIndex].collected + progressIncrease,
+                  newGoals[goldenGoalIndex].target
                 );
 
-                if (starGoalIndex !== -1) {
-                  const progressIncrease = modifiers.doubleGoalProgress
-                    ? collectedStars * 2
-                    : collectedStars;
-                  const newCollected = Math.min(
-                    newGoals[starGoalIndex].collected + progressIncrease,
-                    newGoals[starGoalIndex].target
-                  );
-
-                  newGoals[starGoalIndex] = {
-                    ...newGoals[starGoalIndex],
-                    collected: newCollected,
-                  };
-                }
-
-                return newGoals;
-              });
-            }
-
-            if (collectedStars > 0) {
-
-              let starsAdded = 0;
-              const availableTopPositions = [2, 3, 4];
-
-              for (const col of availableTopPositions) {
-                if (starsAdded >= collectedStars) break;
-
-                if (boardToProcess[0][col] === null) {
-                  boardToProcess[0][col] = "star";
-                  starsAdded++;
-                }
+                newGoals[goldenGoalIndex] = {
+                  ...newGoals[goldenGoalIndex],
+                  collected: newCollected,
+                };
               }
 
-              if (starsAdded < collectedStars) {
-                for (let row = 0; row < 2; row++) {
-                  for (const col of availableTopPositions) {
-                    if (starsAdded >= collectedStars) break;
+              return newGoals;
+            });
+          }
 
-                    if (boardToProcess[row][col] === null) {
-                      boardToProcess[row][col] = "star";
-                      starsAdded++;
-                    }
-                  }
-                }
+          // Обновляем цели для обычных фигур
+          setGoals((prevGoals) => {
+            const goalsWithoutSpecial = prevGoals.filter(
+              (goal) => goal.figure !== "goldenCell" && goal.figure !== "star"
+            );
+            const updatedGoals = updateGoalsWithModifiers(
+              goalsWithoutSpecial,
+              foundMatches,
+              modifiers
+            );
+
+            const goldenGoal = prevGoals.find(
+              (goal) => goal.figure === "goldenCell"
+            );
+            const starGoal = prevGoals.find((goal) => goal.figure === "star");
+            const result = [...updatedGoals];
+            if (goldenGoal) result.push(goldenGoal);
+            if (starGoal) result.push(starGoal);
+            return result;
+          });
+
+          const roundScore = calculateRoundScore(foundMatches, modifiers);
+          totalRoundScore += roundScore;
+
+          if (modifiers.doublePoints || modifiers.doubleGoalProgress) {
+            usedModifiers = true;
+          }
+
+          setMatches(foundMatches);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+          // Обрабатываем обычные матчи
+          boardToProcess = updateBoardAfterMatches(boardToProcess);
+          setBoard(boardToProcess);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+          setMatches([]);
+
+          boardToProcess = applyGravity(boardToProcess);
+          setBoard(boardToProcess);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+          // Заполняем пустые места после матчей
+          const tempLevel = currentLevel
+            ? {
+                ...currentLevel,
+                specialCells: updatedSpecialCells,
               }
+            : undefined;
 
-              setBoard([...boardToProcess]);
-            }
+          boardToProcess = fillEmptySlots(boardToProcess, tempLevel);
+          setBoard(boardToProcess);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+        }
+
+        // ПОСЛЕ обработки обычных матчей обрабатываем звезды
+        let collectedStars = 0;
+        const starsToRemove: Position[] = [];
+
+        // Поиск звезд в нижнем ряду для всех уровней
+        for (let col = 0; col < boardToProcess[0].length; col++) {
+          if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
+            starsToRemove.push({ row: BOARD_ROWS - 1, col });
           }
         }
 
-        if (foundMatches.length === 0) {
+        // Удаляем звезды из нижнего ряда
+        if (starsToRemove.length > 0) {
+          collectedStars = starsToRemove.length;
+
+          starsToRemove.forEach(({ row, col }) => {
+            boardToProcess[row][col] = null;
+          });
+
+          // Обновляем цели для звезд
+          if (collectedStars > 0) {
+            setGoals((prevGoals) => {
+              const newGoals = [...prevGoals];
+              const starGoalIndex = newGoals.findIndex(
+                (goal) => goal.figure === "star"
+              );
+
+              if (starGoalIndex !== -1) {
+                const progressIncrease = modifiers.doubleGoalProgress
+                  ? collectedStars * 2
+                  : collectedStars;
+                const newCollected = Math.min(
+                  newGoals[starGoalIndex].collected + progressIncrease,
+                  newGoals[starGoalIndex].target
+                );
+
+                newGoals[starGoalIndex] = {
+                  ...newGoals[starGoalIndex],
+                  collected: newCollected,
+                };
+              }
+
+              return newGoals;
+            });
+          }
+
+          // Применяем гравитацию после удаления звезд
+          boardToProcess = applyGravity(boardToProcess);
+          setBoard([...boardToProcess]);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+
+          // Заполняем пустые места новыми фигурами
+          const tempLevel = currentLevel
+            ? {
+                ...currentLevel,
+                specialCells: updatedSpecialCells,
+              }
+            : undefined;
+
+          boardToProcess = fillEmptySlots(boardToProcess, tempLevel);
+          setBoard([...boardToProcess]);
+          await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
+        }
+
+        // Проверяем, есть ли еще матчи или звезды для обработки
+        const newMatches = findAllMatches(boardToProcess);
+        const newStarsToRemove = [];
+        for (let col = 0; col < boardToProcess[0].length; col++) {
+          if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
+            newStarsToRemove.push({ row: BOARD_ROWS - 1, col });
+          }
+        }
+
+        if (newMatches.length === 0 && newStarsToRemove.length === 0) {
           hasMatches = false;
           break;
         }
-
-        let collectedGoldenCellsInThisRound = 0;
-
-        foundMatches.forEach((match) => {
-          match.positions.forEach((position) => {
-            const specialCellIndex = updatedSpecialCells.findIndex(
-              (cell) =>
-                cell.row === position.row &&
-                cell.col === position.col &&
-                cell.isActive
-            );
-
-            if (specialCellIndex !== -1) {
-              updatedSpecialCells[specialCellIndex] = {
-                ...updatedSpecialCells[specialCellIndex],
-                isActive: false,
-              };
-              collectedGoldenCellsInThisRound++;
-            }
-          });
-        });
-
-        if (onSpecialCellsUpdate && updatedSpecialCells.length > 0) {
-          onSpecialCellsUpdate(updatedSpecialCells);
-        }
-
-        if (collectedGoldenCellsInThisRound > 0) {
-          setGoals((prevGoals) => {
-            const newGoals = [...prevGoals];
-            const goldenGoalIndex = newGoals.findIndex(
-              (goal) => goal.figure === "goldenCell"
-            );
-
-            if (goldenGoalIndex !== -1) {
-              const progressIncrease = modifiers.doubleGoalProgress
-                ? collectedGoldenCellsInThisRound * 2
-                : collectedGoldenCellsInThisRound;
-
-              const newCollected = Math.min(
-                newGoals[goldenGoalIndex].collected + progressIncrease,
-                newGoals[goldenGoalIndex].target
-              );
-
-              newGoals[goldenGoalIndex] = {
-                ...newGoals[goldenGoalIndex],
-                collected: newCollected,
-              };
-            }
-
-            return newGoals;
-          });
-        }
-
-        setGoals((prevGoals) => {
-          const goalsWithoutSpecial = prevGoals.filter(
-            (goal) => goal.figure !== "goldenCell" && goal.figure !== "star"
-          );
-          const updatedGoals = updateGoalsWithModifiers(
-            goalsWithoutSpecial,
-            foundMatches,
-            modifiers
-          );
-
-          const goldenGoal = prevGoals.find(
-            (goal) => goal.figure === "goldenCell"
-          );
-          const starGoal = prevGoals.find((goal) => goal.figure === "star");
-          const result = [...updatedGoals];
-          if (goldenGoal) result.push(goldenGoal);
-          if (starGoal) result.push(starGoal);
-          return result;
-        });
-
-        const roundScore = calculateRoundScore(foundMatches, modifiers);
-        totalRoundScore += roundScore;
-
-        if (modifiers.doublePoints || modifiers.doubleGoalProgress) {
-          usedModifiers = true;
-        }
-
-        setMatches(foundMatches);
-        await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
-
-        boardToProcess = updateBoardAfterMatches(boardToProcess);
-        setBoard(boardToProcess);
-        await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
-
-        setMatches([]);
-
-        boardToProcess = applyGravity(boardToProcess);
-        setBoard(boardToProcess);
-        await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
-
-        const tempLevel = currentLevel
-          ? {
-              ...currentLevel,
-              specialCells: updatedSpecialCells,
-            }
-          : undefined;
-
-        boardToProcess = fillEmptySlots(boardToProcess, tempLevel);
-        setBoard(boardToProcess);
-        await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
       }
 
       if (totalRoundScore > 0) {
