@@ -10,6 +10,7 @@ export const FIGURES = [
   "phone",
   "smartphone",
   "goldenCell",
+  "star",
 ] as const;
 
 export type Figure = (typeof FIGURES)[number];

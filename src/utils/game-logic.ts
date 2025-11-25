@@ -1,4 +1,4 @@
-import { Board, Figure, Level } from "types";
+import { Board, Figure, Level, Position } from "types";
 import { BOARD_ROWS, BOARD_COLS } from "consts";
 import {
   findAllMatches,
@@ -9,7 +9,10 @@ import {
 import { shuffleBoardWithoutMatches } from "@utils/board-utils";
 
 export const createInitialBoard = (level?: Level): Board => {
-  const board: Board = [];
+  const board: Board = Array(BOARD_ROWS)
+    .fill(null)
+    .map(() => Array(BOARD_COLS).fill(null));
+
   const availableFigures = level?.availableFigures || [
     "pencil",
     "questionBook",
@@ -17,11 +20,20 @@ export const createInitialBoard = (level?: Level): Board => {
     "briefcase",
     "bonnet",
   ];
+  
 
+  if (level?.starPositions) {
+    level.starPositions.forEach((position: Position) => {
+      if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
+        board[position.row][position.col] = "star";
+      }
+    });
+  }
 
   for (let row = 0; row < BOARD_ROWS; row++) {
-    const boardRow: (Figure | null)[] = [];
     for (let col = 0; col < BOARD_COLS; col++) {
+      if (board[row][col] === "star") continue;
+
       let figure: Figure;
       let attempts = 0;
       let validFigure = false;
@@ -31,10 +43,12 @@ export const createInitialBoard = (level?: Level): Board => {
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
         attempts++;
 
+        if (figure === "star") continue;
+
         const horizontalMatch =
           col >= 2 &&
-          boardRow[col - 1] === figure &&
-          boardRow[col - 2] === figure;
+          board[row][col - 1] === figure &&
+          board[row][col - 2] === figure;
 
         const verticalMatch =
           row >= 2 &&
@@ -43,18 +57,16 @@ export const createInitialBoard = (level?: Level): Board => {
 
         if (!horizontalMatch && !verticalMatch) {
           validFigure = true;
-          boardRow.push(figure);
+          board[row][col] = figure;
         }
       }
 
       if (!validFigure) {
         const randomFigure =
           availableFigures[Math.floor(Math.random() * availableFigures.length)];
-        boardRow.push(randomFigure);
-
+        board[row][col] = randomFigure === "star" ? "pencil" : randomFigure;
       }
     }
-    board.push(boardRow);
   }
 
   const matches = findAllMatches(board);
@@ -78,8 +90,13 @@ export const fillEmptySlots = (board: Board, level?: Level): Board => {
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = 0; row < BOARD_ROWS; row++) {
       if (newBoard[row][col] === null) {
+        const figuresWithoutStars = availableFigures.filter(
+          (fig) => fig !== "star"
+        );
         const randomFigure =
-          availableFigures[Math.floor(Math.random() * availableFigures.length)];
+          figuresWithoutStars[
+            Math.floor(Math.random() * figuresWithoutStars.length)
+          ];
         newBoard[row][col] = randomFigure;
       }
     }

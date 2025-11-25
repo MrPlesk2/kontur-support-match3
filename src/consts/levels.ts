@@ -55,17 +55,17 @@ export const LEVELS: Level[] = [
     name: "Специалист",
     description: "Растёшь над собой!",
     goals: [
-      { figure: "pencil", target: 3, collected: 0 },
-      { figure: "bonnet", target: 4, collected: 0 },
-      { figure: "briefcase", target: 5, collected: 0 },
+      { figure: "star", target: 5, collected: 0 }, // Цель - собрать 5 звезд
     ],
     moves: 23,
-    availableFigures: [
-      "pencil",
-      "questionBook",
-      "openBook",
-      "briefcase",
-      "bonnet",
+    availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
+    starPositions: [
+      // Начальные позиции звезд
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 3 },
+      { row: 0, col: 5 },
+      { row: 0, col: 6 },
     ],
   },
 ];

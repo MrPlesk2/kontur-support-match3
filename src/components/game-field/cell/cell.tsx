@@ -35,16 +35,19 @@ export const Cell = ({
     onDragOver(position);
   };
 
+  const isStar = figure === "star";
+
   return (
     <div
       className={`
         cell 
         ${isSelected ? "cell--selected" : ""}
-        ${isMatched ? "cell--matched" : ""}
-        ${!figure ? "cell--empty" : ""}
         ${
-          specialCell ? `cell--${specialCell.type}` : ""
+          isMatched && !isStar ? "cell--matched" : ""
         }
+        ${!figure ? "cell--empty" : ""}
+        ${specialCell ? `cell--${specialCell.type}` : ""}
+        ${isStar ? "cell--star" : ""}
       `}
       onClick={handleClick}
       onMouseDown={handleMouseDown}
@@ -54,7 +57,7 @@ export const Cell = ({
         <img
           src={FIGURE_PATHS[figure]}
           alt={figure}
-          className="figure"
+          className={`figure ${isStar ? "figure--star" : ""}`}
           draggable="false"
         />
       )}

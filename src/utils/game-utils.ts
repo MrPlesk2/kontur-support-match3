@@ -1,13 +1,23 @@
 import { Board, Position, Match } from "types";
 import { BOARD_ROWS, BOARD_COLS, MIN_MATCH_LENGTH } from "consts";
 
-export const isValidPosition = (position: Position): boolean => {
-  return (
-    position.row >= 0 &&
-    position.row < BOARD_ROWS &&
-    position.col >= 0 &&
-    position.col < BOARD_COLS
-  );
+export const willCreateMatch = (
+  board: Board,
+  pos1: Position,
+  pos2: Position
+): boolean => {
+  if (!board[pos1.row][pos1.col] || !board[pos2.row][pos2.col]) {
+    return false;
+  }
+
+  const testBoard = board.map((row) => [...row]);
+  const temp = testBoard[pos1.row][pos1.col];
+  testBoard[pos1.row][pos1.col] = testBoard[pos2.row][pos2.col];
+  testBoard[pos2.row][pos2.col] = temp;
+
+  const matches = findAllMatches(testBoard);
+
+  return matches.length > 0;
 };
 
 export const findAllMatches = (board: Board): Match[] => {
@@ -17,7 +27,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let col = 0;
     while (col < BOARD_COLS - 2) {
       const figure = board[row][col];
-      if (!figure) {
+      if (!figure || figure === "star") {
         col++;
         continue;
       }
@@ -47,7 +57,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let row = 0;
     while (row < BOARD_ROWS - 2) {
       const figure = board[row][col];
-      if (!figure) {
+      if (!figure || figure === "star") {
         row++;
         continue;
       }
@@ -74,42 +84,6 @@ export const findAllMatches = (board: Board): Match[] => {
   }
 
   return matches;
-};
-
-export const getUniquePositions = (matches: Match[]): Position[] => {
-  const uniquePositions = new Set<string>();
-  const positions: Position[] = [];
-
-  matches.forEach((match) => {
-    match.positions.forEach((position) => {
-      const key = `${position.row}-${position.col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        positions.push(position);
-      }
-    });
-  });
-
-  return positions;
-};
-
-export const willCreateMatch = (
-  board: Board,
-  pos1: Position,
-  pos2: Position
-): boolean => {
-  if (!board[pos1.row][pos1.col] || !board[pos2.row][pos2.col]) {
-    return false;
-  }
-
-  const testBoard = board.map((row) => [...row]);
-  const temp = testBoard[pos1.row][pos1.col];
-  testBoard[pos1.row][pos1.col] = testBoard[pos2.row][pos2.col];
-  testBoard[pos2.row][pos2.col] = temp;
-
-  const matches = findAllMatches(testBoard);
-
-  return matches.length > 0;
 };
 
 export const updateBoardAfterMatches = (board: Board): Board => {
@@ -144,3 +118,28 @@ export const applyGravity = (board: Board): Board => {
   return newBoard;
 };
 
+export const isValidPosition = (position: Position): boolean => {
+  return (
+    position.row >= 0 &&
+    position.row < BOARD_ROWS &&
+    position.col >= 0 &&
+    position.col < BOARD_COLS
+  );
+};
+
+export const getUniquePositions = (matches: Match[]): Position[] => {
+  const uniquePositions = new Set<string>();
+  const positions: Position[] = [];
+
+  matches.forEach((match) => {
+    match.positions.forEach((position) => {
+      const key = `${position.row}-${position.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        positions.push(position);
+      }
+    });
+  });
+
+  return positions;
+};

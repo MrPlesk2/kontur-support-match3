@@ -28,6 +28,15 @@ export const useSwapLogic = (
       setIsSwapping(true);
       setIsAnimating(true);
 
+      const figure1 = board[pos1.row][pos1.col];
+      const figure2 = board[pos2.row][pos2.col];
+
+      if (figure1 === "star" && figure2 === "star") {
+        setIsSwapping(false);
+        setIsAnimating(false);
+        return false;
+      }
+
       if (!willCreateMatch(board, pos1, pos2)) {
         setIsSwapping(false);
         setIsAnimating(false);

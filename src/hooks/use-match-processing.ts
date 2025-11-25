@@ -8,8 +8,9 @@ import {
   Goal,
   Level,
   SpecialCell,
+  Position,
 } from "types";
-import { ANIMATION_DURATION } from "consts";
+import { ANIMATION_DURATION, BOARD_ROWS } from "consts";
 import {
   findAllMatches,
   updateBoardAfterMatches,
@@ -62,6 +63,82 @@ export const useMatchProcessing = ({
       while (hasMatches) {
         const foundMatches = findAllMatches(boardToProcess);
 
+        let collectedStars = 0;
+
+        if (currentLevel?.id === 3) {
+          const starsInBottomRow: Position[] = [];
+
+          for (let col = 0; col < boardToProcess[0].length; col++) {
+            if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
+              starsInBottomRow.push({ row: BOARD_ROWS - 1, col });
+            }
+          }
+
+          if (starsInBottomRow.length > 0) {
+            collectedStars = starsInBottomRow.length;
+
+            starsInBottomRow.forEach(({ row, col }) => {
+              boardToProcess[row][col] = null;
+            });
+
+            if (collectedStars > 0) {
+              setGoals((prevGoals) => {
+                const newGoals = [...prevGoals];
+                const starGoalIndex = newGoals.findIndex(
+                  (goal) => goal.figure === "star"
+                );
+
+                if (starGoalIndex !== -1) {
+                  const progressIncrease = modifiers.doubleGoalProgress
+                    ? collectedStars * 2
+                    : collectedStars;
+                  const newCollected = Math.min(
+                    newGoals[starGoalIndex].collected + progressIncrease,
+                    newGoals[starGoalIndex].target
+                  );
+
+                  newGoals[starGoalIndex] = {
+                    ...newGoals[starGoalIndex],
+                    collected: newCollected,
+                  };
+                }
+
+                return newGoals;
+              });
+            }
+
+            if (collectedStars > 0) {
+
+              let starsAdded = 0;
+              const availableTopPositions = [2, 3, 4];
+
+              for (const col of availableTopPositions) {
+                if (starsAdded >= collectedStars) break;
+
+                if (boardToProcess[0][col] === null) {
+                  boardToProcess[0][col] = "star";
+                  starsAdded++;
+                }
+              }
+
+              if (starsAdded < collectedStars) {
+                for (let row = 0; row < 2; row++) {
+                  for (const col of availableTopPositions) {
+                    if (starsAdded >= collectedStars) break;
+
+                    if (boardToProcess[row][col] === null) {
+                      boardToProcess[row][col] = "star";
+                      starsAdded++;
+                    }
+                  }
+                }
+              }
+
+              setBoard([...boardToProcess]);
+            }
+          }
+        }
+
         if (foundMatches.length === 0) {
           hasMatches = false;
           break;
@@ -79,7 +156,6 @@ export const useMatchProcessing = ({
             );
 
             if (specialCellIndex !== -1) {
-
               updatedSpecialCells[specialCellIndex] = {
                 ...updatedSpecialCells[specialCellIndex],
                 isActive: false,
@@ -121,11 +197,11 @@ export const useMatchProcessing = ({
         }
 
         setGoals((prevGoals) => {
-          const goalsWithoutGolden = prevGoals.filter(
-            (goal) => goal.figure !== "goldenCell"
+          const goalsWithoutSpecial = prevGoals.filter(
+            (goal) => goal.figure !== "goldenCell" && goal.figure !== "star"
           );
           const updatedGoals = updateGoalsWithModifiers(
-            goalsWithoutGolden,
+            goalsWithoutSpecial,
             foundMatches,
             modifiers
           );
@@ -133,10 +209,11 @@ export const useMatchProcessing = ({
           const goldenGoal = prevGoals.find(
             (goal) => goal.figure === "goldenCell"
           );
-          if (goldenGoal) {
-            return [...updatedGoals, goldenGoal];
-          }
-          return updatedGoals;
+          const starGoal = prevGoals.find((goal) => goal.figure === "star");
+          const result = [...updatedGoals];
+          if (goldenGoal) result.push(goldenGoal);
+          if (starGoal) result.push(starGoal);
+          return result;
         });
 
         const roundScore = calculateRoundScore(foundMatches, modifiers);
