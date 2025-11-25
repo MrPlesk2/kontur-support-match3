@@ -221,6 +221,7 @@ export const useMatchProcessing = ({
 
           boardToProcess = fillEmptySlots(boardToProcess, lvl);
           setBoard(boardToProcess);
+
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
           if (lvl?.id == 5) {
             const result = applyHorizontalGravity(boardToProcess);
@@ -234,7 +235,6 @@ export const useMatchProcessing = ({
 
               boardToProcess = fillEmptySlots(boardToProcess, lvl);
               setBoard(boardToProcess);
-              await new Promise((r) => setTimeout(r, ANIMATION_DURATION/2));
             }
           }
           // ---------------------------
