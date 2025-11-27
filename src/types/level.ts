@@ -14,4 +14,5 @@ export type Level = {
   starPositions?: Position[];
   diamondPositions?: Position[];
   teamPositions?: Position[];
+  teamImagePosition?: Position;
 };

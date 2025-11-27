@@ -13,6 +13,10 @@ export const FIGURES = [
   "star",
   "diamond",
   "teamCell",
+  "teamImage0",
+  "teamImage1",
+  "teamImage2",
+  "teamImage3",
   "team",
 ] as const;
 

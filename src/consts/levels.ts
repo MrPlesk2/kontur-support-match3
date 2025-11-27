@@ -117,14 +117,13 @@ export const LEVELS: Level[] = [
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     teamPositions: [
-      // Начальные позиции звезд
       { row: 2, col: 2 },
       { row: 2, col: 3 },
       { row: 2, col: 4 },
       { row: 3, col: 2 },
       { row: 3, col: 3 },
-      { row: 3, col: 4 },
     ],
+    teamImagePosition : { row: 3, col: 4 },
     specialCells: [
       { row: 1, col: 2, type: "team", isActive: true },
       { row: 1, col: 3, type: "team", isActive: true },

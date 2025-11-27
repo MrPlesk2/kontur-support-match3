@@ -27,6 +27,7 @@ import {
   updateGoalsWithModifiers,
   calculateRoundScore,
 } from "@utils/modifiers-utils";
+import { progressTeamHappyOne, progressTeamHappyTwo, progressTeamHappyThree } from "@utils/game-team-utils";
 
 type UseMatchProcessingProps = {
   setBoard: (board: Board) => void;
@@ -61,6 +62,7 @@ export const useMatchProcessing = ({
       let hasMatches = true;
       let totalRoundScore = 0;
       let usedModifiers = false;
+      let teamImageProgressionCounter = 0;
 
       const initialSpecialCells = currentLevel?.specialCells || [];
       const updatedSpecialCells: SpecialCell[] = [...initialSpecialCells];
@@ -182,7 +184,22 @@ export const useMatchProcessing = ({
 
             const result = [...updated];
             if (goldenGoal) result.push(goldenGoal);
-            if (teamGoal) result.push(teamGoal);
+            if (teamGoal) {
+              if (teamGoal.collected >= 12 && teamImageProgressionCounter < 3) {
+                teamImageProgressionCounter = 3;
+                boardToProcess = progressTeamHappyThree(boardToProcess);
+                setBoard(boardToProcess);
+              } else if (teamGoal.collected >= 8 && teamImageProgressionCounter < 2){
+                teamImageProgressionCounter = 2;
+                boardToProcess = progressTeamHappyTwo(boardToProcess);
+                setBoard(boardToProcess);
+              } else if (teamGoal.collected >= 4 && teamImageProgressionCounter < 1){
+                teamImageProgressionCounter = 1;
+                boardToProcess = progressTeamHappyOne(boardToProcess);
+                setBoard(boardToProcess);
+              }
+              result.push(teamGoal);
+            }
             if (starGoal) result.push(starGoal);
             if (diamondGoal) result.push(diamondGoal);
 

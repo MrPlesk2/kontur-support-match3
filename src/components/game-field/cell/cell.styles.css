@@ -10,18 +10,42 @@
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  overflow: visible;
   position: relative;
 }
+
+.cell-content {
+  position: absolute;
+  width: calc(100% + var(--cell-gap));
+  height: calc(100% + var(--cell-gap));
+  left: calc(-1 * var(--cell-gap) / 2);
+  top: calc(-1 * var(--cell-gap) / 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 
 .cell:hover {
   background-color: #f8f8f8;
   transform: scale(1.05);
 }
 
+.cell:has(.figure--big):hover {
+  background-color: #f8f8f8;
+  transform: none;
+}
+
 .cell--selected {
   background-color: #e3f2fd;
   box-shadow: 0 0 0 2px #2196f3;
   transform: scale(1.1);
+}
+
+.cell--selected:has(.figure--big){
+  box-shadow: 0 0 0 0px #f8f8f8;
+  transform: none;
 }
 
 .cell--matched {
@@ -77,6 +101,10 @@
   transform: scale(0.95);
 }
 
+.cell:has(.figure--big):active {
+  transform: none;
+}
+
 .figure {
   width: 36px;
   height: 36px;
@@ -84,8 +112,20 @@
   transition: transform 0.3s ease;
 }
 
+.figure--big--image {
+  width: 168px;
+  height: 128px;
+  position: absolute;
+  top: -68px;
+  left: -112px;
+}
+
 .cell--selected .figure {
   transform: scale(1.2);
+}
+
+.cell--selected .figure--big {
+  transform: none !important;
 }
 
 @keyframes matchAnimation {
