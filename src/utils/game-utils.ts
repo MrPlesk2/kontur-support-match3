@@ -116,6 +116,7 @@ export const applyGravity = (board: Board): Board => {
       } else if (newBoard[row][col] === "team" || isTeamImage(newBoard[row][col])) {
         emptySlots = 0;
       } else if (emptySlots > 0) {
+        console.log(newBoard[row][col]);
         newBoard[row + emptySlots][col] = newBoard[row][col];
         newBoard[row][col] = null;
       }

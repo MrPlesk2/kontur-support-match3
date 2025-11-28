@@ -240,7 +240,7 @@ export const useMatchProcessing = ({
           setBoard(boardToProcess);
 
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-          if (lvl?.id == 1) {
+          if (lvl?.id == 5) {
             const result = applyHorizontalGravity(boardToProcess);
             boardToProcess = result.board
             setBoard(boardToProcess);
@@ -254,22 +254,6 @@ export const useMatchProcessing = ({
               setBoard(boardToProcess);
             }
           }
-          // ---------------------------
-          // RESTORE TEAM CELLS ON BOARD so they never disappear
-          // After gravity/fill there may be different tiles at those coords,
-          // but requirement is: teamCell must remain visible — so we re-place marker.
-          // We place a 'teamCell' marker (the exact value depends on your representation).
-          // If in your project a team cell should keep its original tile value, you can store
-          // the original value and reassign it here instead.
-          // ---------------------------
-          // We will set the board cell to a stable marker string 'teamCell' — adapt if needed.
-          uniqueTeamPositions.forEach(({ row, col }) => {
-            if (boardToProcess[row] && typeof col === "number") {
-              // Set to a marker representing the team cell.
-              // Adjust this value to match your board's expected tile value if necessary.
-              boardToProcess[row][col] = boardToProcess[row][col] ?? "teamCell";
-            }
-          });
 
           // push updated board after restoring team cells
           setBoard([...boardToProcess]);
@@ -317,14 +301,6 @@ export const useMatchProcessing = ({
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
-          // Ensure team cells are still present
-          updatedSpecialCells.forEach((sc) => {
-            if (sc.type === "team") {
-              if (boardToProcess[sc.row]) {
-                boardToProcess[sc.row][sc.col] = boardToProcess[sc.row][sc.col] ?? "teamCell";
-              }
-            }
-          });
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
