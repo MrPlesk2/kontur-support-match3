@@ -25,7 +25,7 @@ type UseGameActionsProps = {
   setActiveBonus: (bonus: ActiveBonus | null) => void;
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void;
   currentLevel?: Level;
-  onSpecialCellsUpdate?: (specialCells: SpecialCell[]) => void; // Добавляем колбек
+  onSpecialCellsUpdate?: (specialCells: SpecialCell[]) => void;
 };
 
 export const useGameActions = ({

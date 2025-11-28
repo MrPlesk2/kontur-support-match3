@@ -1,14 +1,29 @@
-import { Board, Position, Match } from "types";
+import { Board, Position, Match, Figure } from "types";
 import { BOARD_ROWS, BOARD_COLS, MIN_MATCH_LENGTH } from "consts";
 
-export const isValidPosition = (position: Position): boolean => {
-  return (
-    position.row >= 0 &&
-    position.row < BOARD_ROWS &&
-    position.col >= 0 &&
-    position.col < BOARD_COLS
-  );
+export const willCreateMatch = (
+  board: Board,
+  pos1: Position,
+  pos2: Position
+): boolean => {
+  if (!board[pos1.row][pos1.col] || !board[pos2.row][pos2.col]) {
+    return false;
+  }
+
+  const testBoard = board.map((row) => [...row]);
+  const temp = testBoard[pos1.row][pos1.col];
+  testBoard[pos1.row][pos1.col] = testBoard[pos2.row][pos2.col];
+  testBoard[pos2.row][pos2.col] = temp;
+
+  const matches = findAllMatches(testBoard);
+
+  return matches.length > 0;
 };
+
+export const isTeamImage = (figure: Figure | null): boolean => {
+  if (!figure) return false;
+  return figure === "teamImage0" || figure === "teamImage1" || figure === "teamImage2" || figure === "teamImage3";
+}
 
 export const findAllMatches = (board: Board): Match[] => {
   const matches: Match[] = [];
@@ -17,7 +32,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let col = 0;
     while (col < BOARD_COLS - 2) {
       const figure = board[row][col];
-      if (!figure) {
+      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team" || isTeamImage(figure)) {
         col++;
         continue;
       }
@@ -47,7 +62,7 @@ export const findAllMatches = (board: Board): Match[] => {
     let row = 0;
     while (row < BOARD_ROWS - 2) {
       const figure = board[row][col];
-      if (!figure) {
+      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team" || isTeamImage(figure)) {
         row++;
         continue;
       }
@@ -76,42 +91,6 @@ export const findAllMatches = (board: Board): Match[] => {
   return matches;
 };
 
-export const getUniquePositions = (matches: Match[]): Position[] => {
-  const uniquePositions = new Set<string>();
-  const positions: Position[] = [];
-
-  matches.forEach((match) => {
-    match.positions.forEach((position) => {
-      const key = `${position.row}-${position.col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        positions.push(position);
-      }
-    });
-  });
-
-  return positions;
-};
-
-export const willCreateMatch = (
-  board: Board,
-  pos1: Position,
-  pos2: Position
-): boolean => {
-  if (!board[pos1.row][pos1.col] || !board[pos2.row][pos2.col]) {
-    return false;
-  }
-
-  const testBoard = board.map((row) => [...row]);
-  const temp = testBoard[pos1.row][pos1.col];
-  testBoard[pos1.row][pos1.col] = testBoard[pos2.row][pos2.col];
-  testBoard[pos2.row][pos2.col] = temp;
-
-  const matches = findAllMatches(testBoard);
-
-  return matches.length > 0;
-};
-
 export const updateBoardAfterMatches = (board: Board): Board => {
   const newBoard = board.map((row) => [...row]);
   const matches = findAllMatches(newBoard);
@@ -134,6 +113,8 @@ export const applyGravity = (board: Board): Board => {
     for (let row = BOARD_ROWS - 1; row >= 0; row--) {
       if (newBoard[row][col] === null) {
         emptySlots++;
+      } else if (newBoard[row][col] === "team" || isTeamImage(newBoard[row][col])) {
+        emptySlots = 0;
       } else if (emptySlots > 0) {
         newBoard[row + emptySlots][col] = newBoard[row][col];
         newBoard[row][col] = null;
@@ -144,3 +125,97 @@ export const applyGravity = (board: Board): Board => {
   return newBoard;
 };
 
+export const applyHorizontalGravity = (board: Board): {board: Board, isChanged: boolean} => {
+  const newBoard: Board = board.map(row => [...row]);
+  let isChanged = false;
+  for (const rowIndex of [5, 4]) {
+    if (rowIndex >= BOARD_ROWS) continue;
+
+    const row = [...newBoard[rowIndex]];
+
+    // Проходим слева направо, затем справа налево для корректного смещения
+    for (let col = 3; col < BOARD_COLS; col++) {
+      const cell = row[col];
+      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
+
+      let targetCol = 3;
+
+      if (col === targetCol) continue;
+
+      // Определяем шаг: +1 если двигаемся вправо, -1 если влево
+      const step = -1;
+      let currentCol = col;
+
+      while (currentCol !== targetCol) {
+        const nextCol = currentCol + step;
+
+        if (!row[nextCol]) {
+          row[nextCol] = row[currentCol];
+          row[currentCol] = null;
+          currentCol = nextCol;
+          isChanged = true;
+        } else {
+          // следующая клетка занята — останавливаемся
+          break;
+        }
+      }
+    }
+
+    for (let col = 2; col >=0; col--) {
+      const cell = row[col];
+      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
+
+      let targetCol = 2;
+
+      if (col === targetCol) continue;
+
+      // Определяем шаг: +1 если двигаемся вправо, -1 если влево
+      const step = 1;
+      let currentCol = col;
+
+      while (currentCol !== targetCol) {
+        const nextCol = currentCol + step;
+
+        if (!row[nextCol]) {
+          row[nextCol] = row[currentCol];
+          row[currentCol] = null;
+          currentCol = nextCol;
+          isChanged = true;
+        } else {
+          // следующая клетка занята — останавливаемся
+          break;
+        }
+      }
+    }
+
+    newBoard[rowIndex] = row;
+  }
+
+  return {board: newBoard, isChanged};
+};
+
+export const isValidPosition = (position: Position): boolean => {
+  return (
+    position.row >= 0 &&
+    position.row < BOARD_ROWS &&
+    position.col >= 0 &&
+    position.col < BOARD_COLS
+  );
+};
+
+export const getUniquePositions = (matches: Match[]): Position[] => {
+  const uniquePositions = new Set<string>();
+  const positions: Position[] = [];
+
+  matches.forEach((match) => {
+    match.positions.forEach((position) => {
+      const key = `${position.row}-${position.col}`;
+      if (!uniquePositions.has(key)) {
+        uniquePositions.add(key);
+        positions.push(position);
+      }
+    });
+  });
+
+  return positions;
+};

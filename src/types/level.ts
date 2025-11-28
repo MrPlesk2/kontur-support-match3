@@ -1,6 +1,7 @@
 import { Goal } from "./goal";
 import { Figure } from "./figure";
 import { SpecialCell } from "./special-cell";
+import { Position } from "./position";
 
 export type Level = {
   id: number;
@@ -10,4 +11,8 @@ export type Level = {
   moves: number;
   availableFigures: Figure[];
   specialCells?: SpecialCell[];
+  starPositions?: Position[];
+  diamondPositions?: Position[];
+  teamPositions?: Position[];
+  teamImagePosition?: Position;
 };
