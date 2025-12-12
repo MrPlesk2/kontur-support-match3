@@ -3,5 +3,9 @@ export const BONUS_TYPES = [
   "careerGrowth",
   "sportCompensation",
   "knowledgeBase",
+  "remoteWork",
+  "openGuide",
+  "modernProducts",
+  "itSphere",
 ] as const;
 export type BonusType = typeof BONUS_TYPES[number];
