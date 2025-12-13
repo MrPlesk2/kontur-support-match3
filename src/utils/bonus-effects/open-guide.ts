@@ -1,13 +1,11 @@
-// utils/bonus-effects/open-guide.ts
 import { Board, Goal } from "types";
 
 /**
- * applyOpenGuideEffect: не меняет доску (можно вернуть board без изменений)
- * onApplyOpenGuide: начисляет +3 к случайной незавершенной цели (collected < target)
+ * Бонус НЕ трогает доску.
+ * Он напрямую модифицирует цели.
  */
 
 export const applyOpenGuideEffect = (board: Board): Board => {
-  // не меняем доску — эффект влияет на цели, не на доску
   return board;
 };
 
@@ -16,25 +14,19 @@ export const onApplyOpenGuide = (
 ) => {
   setGoals((prev) => {
     const next = [...prev];
-    // найдем индексы незавершённых целей (collected < target)
-    const unfinished: number[] = [];
-    next.forEach((g, i) => {
-      if (g.collected < g.target) unfinished.push(i);
-    });
 
-    if (unfinished.length === 0) {
-      // нет незавершённых целей — ничего не делаем
-      return next;
-    }
+    const unfinished = next
+      .map((g, i) => ({ g, i }))
+      .filter(({ g }) => g.collected < g.target);
 
-    // выберем случайную незавершённую цель
-    const idx = unfinished[Math.floor(Math.random() * unfinished.length)];
-    const goal = next[idx];
+    if (unfinished.length === 0) return next;
 
-    const add = 3;
-    next[idx] = {
-      ...goal,
-      collected: Math.min(goal.target, goal.collected + add),
+    const { g, i } =
+      unfinished[Math.floor(Math.random() * unfinished.length)];
+
+    next[i] = {
+      ...g,
+      collected: Math.min(g.target, g.collected + 3),
     };
 
     return next;
