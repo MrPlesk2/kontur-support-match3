@@ -1,16 +1,17 @@
-// hooks/use-input-handlers.ts
 import { useRef } from "react";
-import {
-  Position,
-  Bonus,
-  Board,
-  LevelState,
-  GameBoardState,
-  GameMovesState,
-  ActiveBonus,
+import { 
+  Position, 
+  Bonus, 
+  Board, 
+  LevelState, 
+  GameBoardState, 
+  GameMovesState, 
+  ActiveBonus, 
   Bonus as BonusType,
+  Goal 
 } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
+import { applyGravity, fillEmptySlots } from "@utils/game-logic";
 
 type UseInputHandlersProps = {
   levelState: LevelState;
@@ -24,14 +25,14 @@ type UseInputHandlersProps = {
   ) => Promise<boolean>;
   handleBonus: (type: Bonus["type"], board: Board) => void;
   board: Board;
-
-  // new props for targeted bonuses
   activeBonus: ActiveBonus | null;
   setActiveBonus: (b: ActiveBonus | null) => void;
   setBonuses: (updater: (bonuses: BonusType[]) => BonusType[]) => void;
   setBoard: (board: Board) => void;
   setIsAnimating: (animating: boolean) => void;
   setMoves: (updater: (moves: number) => number) => void;
+  setGoals: (updater: (goals: Goal[]) => Goal[]) => void;
+  processMatches?: (board: Board) => Promise<Board>;
 };
 
 export const useInputHandlers = ({
@@ -47,35 +48,58 @@ export const useInputHandlers = ({
   setBoard,
   setIsAnimating,
   setMoves,
+  setGoals,
+  processMatches,
 }: UseInputHandlersProps) => {
-  // для modernProducts двухшаговой логики
   const modernSourceRef = useRef<Position | null>(null);
 
-  const applyAndFinalizeBonus = (type: string, newBoard: Board, effect: any) => {
-    // уменьшить количество бонуса и закрыть активный
+  const applyAndFinalizeBonus = async (
+    type: string,
+    boardWithHoles: Board,
+    effect: any
+  ) => {
+    // списываем бонус
     setBonuses((prev) => {
       const next = [...prev];
-      const idx = next.findIndex((b) => b.type === (type as any));
+      const idx = next.findIndex((b) => b.type === type);
       if (idx !== -1 && next[idx].count > 0) {
         next[idx] = { ...next[idx], count: next[idx].count - 1 };
       }
       return next;
     });
 
-    if (effect?.onApply) {
-      effect.onApply(setMoves);
-    }
+    effect?.onApply?.(setMoves);
+    effect?.onApplyGoals?.(setGoals);
 
     setIsAnimating(true);
-    setTimeout(() => {
-      setBoard(newBoard);
+
+    try {
+      // 1. показать удаление
+      setBoard([...boardWithHoles]);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // 2. гравитация
+      let board = applyGravity(boardWithHoles);
+      setBoard([...board]);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // 3. заполнение
+      board = fillEmptySlots(board);
+      setBoard([...board]);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // 4. обработать матчи, если они есть
+      if (processMatches) {
+        await processMatches(board);
+      }
+    } finally {
       setIsAnimating(false);
       setActiveBonus(null);
       modernSourceRef.current = null;
-    }, 300);
+    }
   };
 
-  const handleCellClick = (position: Position) => {
+  const handleCellClick = async (position: Position) => {
     if (
       levelState.isLevelTransition ||
       gameState.isSwapping ||
@@ -92,33 +116,26 @@ export const useInputHandlers = ({
         // remoteWork: однонажатие в точке
         if (activeBonus.type === "remoteWork") {
           const newBoard = effect.applyAt(board, position);
-          applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
           return;
         }
-
         // itSphere: однонажатие на фигуру — удаляет все такого типа
         if (activeBonus.type === "itSphere") {
           const newBoard = effect.applyAt(board, position);
-          applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
           return;
         }
-
         // modernProducts: двухшаговый - сначала выбираем исходную фигурку, затем цель
         if (activeBonus.type === "modernProducts") {
-          // если не выбрана исходная — выбрать
           if (!modernSourceRef.current) {
-            // только если на позиции есть допустимая фигура
             const fig = board[position.row][position.col];
             if (!fig) return;
             modernSourceRef.current = position;
-            // визуальная подсветка — можно добавить state, сейчас просто сохраняем
             return;
           }
-
-          // если уже выбран источник — применяем преобразование в указанную цель
           const sourcePos = modernSourceRef.current;
           const newBoard = effect.applyAt(board, sourcePos as Position, position);
-          applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
           return;
         }
       }
@@ -149,12 +166,9 @@ export const useInputHandlers = ({
     ) {
       return;
     }
-
-    // <-- New: если активен таргетный бонус — блокируем drag/swap
     if (activeBonus && activeBonus.isActive) {
       return;
     }
-
     gameState.setSelectedPosition(position);
   };
 
@@ -168,12 +182,9 @@ export const useInputHandlers = ({
     ) {
       return;
     }
-
-    // <-- New: если активен таргетный бонус — блокируем swap при наведении
     if (activeBonus && activeBonus.isActive) {
       return;
     }
-
     if (areAdjacent(gameState.selectedPosition, position)) {
       swapFigures(
         gameState.selectedPosition,

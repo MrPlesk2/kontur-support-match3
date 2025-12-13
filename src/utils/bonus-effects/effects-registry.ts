@@ -64,7 +64,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   openGuide: {
-    apply: applyOpenGuideEffect,
+    apply: (board) => board,
     isInstant: true,
     onApplyGoals: onApplyOpenGuide,
   },
@@ -76,7 +76,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   itSphere: {
-    apply: applyItSphereEffect,
+    apply: (board) => board,
     applyAt: applyItSphereAt,
     isInstant: false,
   },
