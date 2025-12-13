@@ -21,7 +21,7 @@
 .bonus-circle {
   width: 69px;
   height: 69px;
-  background: linear-gradient(135deg, #366AF3, #844BEC);
+  background: #366AF3;
   border-radius: 50%;
   display: flex;
   align-items: center;

@@ -20,7 +20,7 @@
 .bgi-circle {
   width: 76px;
   height: 76px;
-  background: linear-gradient(135deg, #2291FF 0%, #844bec 100%);
+  background: #366AF3;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -35,7 +35,6 @@
 
 .bgi-item--selected .bgi-circle {
   border: 3px solid #FC7630;
-  background: linear-gradient(135deg, #366AF3, #844BEC);
   box-shadow: 
     0 0 0 3px rgba(252, 118, 48, 0.3),
     0 6px 20px rgba(252, 118, 48, 0.25);

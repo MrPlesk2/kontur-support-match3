@@ -19,6 +19,6 @@ body {
 }
 
 body {
-  background: linear-gradient(135deg, #e0f7fa 0%, #91cbff 50%, #4ad7c2 100%);
+  background: linear-gradient(135deg, #E0F7FA 0%, #91cbff 50%, #91cbff 100%);
   background-attachment: fixed;
 }
