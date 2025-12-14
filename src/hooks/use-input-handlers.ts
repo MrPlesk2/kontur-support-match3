@@ -4,18 +4,29 @@ import {
   Bonus, 
   Board, 
   LevelState, 
-  GameBoardState, 
-  GameMovesState, 
-  ActiveBonus, 
-  Bonus as BonusType,
-  Goal 
+  ActiveBonus,
+  Match,
+  Figure 
 } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, findAllMatches } from "@utils/game-logic";
+import { ANIMATION_DURATION } from "consts";
+
+type GameBoardState = {
+  selectedPosition: Position | null;
+  setSelectedPosition: (pos: Position | null) => void;
+  isSwapping: boolean;
+  setIsSwapping: (swapping: boolean) => void;
+  isAnimating: boolean;
+  setIsAnimating: (animating: boolean) => void;
+  moves: number;
+  setMoves: (updater: (moves: number) => number) => void;
+  setMatches: (matches: Match[]) => void;
+};
 
 type UseInputHandlersProps = {
   levelState: LevelState;
-  gameState: GameBoardState & GameMovesState;
+  gameState: GameBoardState;
   areAdjacent: (pos1: Position, pos2: Position) => boolean;
   swapFigures: (
     pos1: Position,
@@ -27,11 +38,12 @@ type UseInputHandlersProps = {
   board: Board;
   activeBonus: ActiveBonus | null;
   setActiveBonus: (b: ActiveBonus | null) => void;
-  setBonuses: (updater: (bonuses: BonusType[]) => BonusType[]) => void;
+  setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void;
   setBoard: (board: Board) => void;
   setIsAnimating: (animating: boolean) => void;
   setMoves: (updater: (moves: number) => number) => void;
-  setGoals: (updater: (goals: Goal[]) => Goal[]) => void;
+  setGoals: (updater: (goals: import("types").Goal[]) => import("types").Goal[]) => void;
+  setMatches: (matches: Match[]) => void;
   processMatches?: (board: Board) => Promise<Board>;
 };
 
@@ -49,6 +61,7 @@ export const useInputHandlers = ({
   setIsAnimating,
   setMoves,
   setGoals,
+  setMatches,
   processMatches,
 }: UseInputHandlersProps) => {
   const modernSourceRef = useRef<Position | null>(null);
@@ -56,6 +69,7 @@ export const useInputHandlers = ({
   const applyAndFinalizeBonus = async (
     type: string,
     boardWithHoles: Board,
+    matchedPositions: Position[],
     effect: any
   ) => {
     // списываем бонус
@@ -74,23 +88,54 @@ export const useInputHandlers = ({
     setIsAnimating(true);
 
     try {
-      // 1. показать удаление
+      // 1. Показываем анимацию матча для удаляемых фигур
+      if (matchedPositions.length > 0) {
+        // Создаем временные матчи для анимации
+        const tempMatches: Match[] = [];
+        
+        // Группируем позиции по типу фигур (для it-sphere все одного типа)
+        const figureTypes = new Map<Figure, Position[]>();
+        
+        matchedPositions.forEach(pos => {
+          const figure = board[pos.row][pos.col];
+          if (figure) {
+            if (!figureTypes.has(figure)) {
+              figureTypes.set(figure, []);
+            }
+            figureTypes.get(figure)!.push(pos);
+          }
+        });
+        
+        // Создаем матчи для каждого типа фигур
+        figureTypes.forEach((positions, figure) => {
+          tempMatches.push({
+            positions,
+            figure
+          });
+        });
+        
+        setMatches(tempMatches);
+        await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
+        setMatches([]);
+      }
+
+      // 2. показываем удаление
       setBoard([...boardWithHoles]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 2. гравитация
-      let board = applyGravity(boardWithHoles);
-      setBoard([...board]);
+      // 3. гравитация
+      let updatedBoard = applyGravity(boardWithHoles);
+      setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 3. заполнение
-      board = fillEmptySlots(board);
-      setBoard([...board]);
+      // 4. заполнение
+      updatedBoard = fillEmptySlots(updatedBoard);
+      setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 4. обработать возможные матчи, если они есть
+      // 5. обработать возможные матчи, если они есть
       if (processMatches) {
-        await processMatches(board);
+        await processMatches(updatedBoard);
       }
     } finally {
       setIsAnimating(false);
@@ -115,14 +160,14 @@ export const useInputHandlers = ({
       if (effect?.applyAt) {
         // remoteWork: однонажатие в точке
         if (activeBonus.type === "remoteWork") {
-          const newBoard = effect.applyAt(board, position);
-          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          const result = effect.applyAt(board, position);
+          await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
         }
         // itSphere: однонажатие на фигуру — удаляет все такого типа
         if (activeBonus.type === "itSphere") {
-          const newBoard = effect.applyAt(board, position);
-          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          const result = effect.applyAt(board, position);
+          await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
         }
         // modernProducts: двухшаговый - сначала выбираем исходную фигурку, затем цель
@@ -134,8 +179,8 @@ export const useInputHandlers = ({
             return;
           }
           const sourcePos = modernSourceRef.current;
-          const newBoard = effect.applyAt(board, sourcePos as Position, position);
-          await applyAndFinalizeBonus(activeBonus.type, newBoard, effect);
+          const result = effect.applyAt(board, sourcePos as Position, position);
+          await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
         }
       }

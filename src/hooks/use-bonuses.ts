@@ -35,7 +35,7 @@ export const useBonuses = ({
    * работает даже без матчей
    */
   const applyBonusBoardUpdate = async (boardWithHoles: Board, effect: any) => {
-    // 1. показать удаление
+    // 1. показываем удаление
     setBoard([...boardWithHoles]);
     await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -89,9 +89,9 @@ export const useBonuses = ({
 
       setIsAnimating(true);
 
-      const boardWithHoles = effect.apply(board);
+      const result = effect.apply(board);
 
-      applyBonusBoardUpdate(boardWithHoles, effect).then(async (finalBoard) => {
+      applyBonusBoardUpdate(result.board, effect).then(async (finalBoard) => {
         // Вызов коллбэков
         effect.onApply?.(setMoves);
         effect.onApplyGoals?.(setGoals);

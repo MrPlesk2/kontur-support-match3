@@ -19,8 +19,8 @@ import {
 import { applyItSphereEffect, applyItSphereAt } from "./it-sphere";
 
 export type BonusEffect = {
-  apply: (board: Board) => Board;
-  applyAt?: (board: Board, pos: Position, secondPos?: Position) => Board;
+  apply: (board: Board) => { board: Board, matchedPositions: Position[] };
+  applyAt?: (board: Board, pos: Position, secondPos?: Position) => { board: Board, matchedPositions: Position[] };
   isInstant?: boolean;
 
   onApply?: (setMoves: (updater: (moves: number) => number) => void) => void;
@@ -34,25 +34,25 @@ export type BonusEffect = {
 
 export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   friendlyTeam: {
-    apply: applyFriendlyTeamEffect,
+    apply: (board) => ({ board: applyFriendlyTeamEffect(board), matchedPositions: [] }),
     isInstant: true,
   },
 
   careerGrowth: {
-    apply: (board) => board,
+    apply: (board) => ({ board, matchedPositions: [] }),
     isInstant: false,
     applyModifiers: applyCareerGrowthEffect,
     reset: resetCareerGrowthModifiers,
   },
 
   sportCompensation: {
-    apply: applySportCompensationEffect,
+    apply: (board) => ({ board: applySportCompensationEffect(board), matchedPositions: [] }),
     isInstant: true,
     onApply: (setMoves) => setMoves((m) => m + 1),
   },
 
   knowledgeBase: {
-    apply: applyKnowledgeBaseEffect,
+    apply: (board) => ({ board: applyKnowledgeBaseEffect(board), matchedPositions: [] }),
     isInstant: true,
     onApply: (setMoves) => setMoves((m) => m + 2),
   },
@@ -64,19 +64,22 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   openGuide: {
-    apply: (board) => board,
+    apply: (board) => ({ board, matchedPositions: [] }),
     isInstant: true,
     onApplyGoals: onApplyOpenGuide,
   },
 
   modernProducts: {
-    apply: applyModernProductsEffect,
-    applyAt: applyModernProductsAt,
+    apply: (board) => ({ board: applyModernProductsEffect(board), matchedPositions: [] }),
+    applyAt: (board, pos1, pos2) => ({ 
+      board: applyModernProductsAt(board, pos1, pos2), 
+      matchedPositions: [] 
+    }),
     isInstant: false,
   },
 
   itSphere: {
-    apply: (board) => board,
+    apply: applyItSphereEffect,
     applyAt: applyItSphereAt,
     isInstant: false,
   },

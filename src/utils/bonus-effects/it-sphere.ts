@@ -22,7 +22,7 @@ const isUsable = (f: Figure | null) => {
 };
 
 /** legacy: удалить самый частый тип */
-export const applyItSphereEffect = (board: Board): Board => {
+export const applyItSphereEffect = (board: Board): { board: Board, matchedPositions: Position[] } => {
   const freq = new Map<Figure, number>();
 
   for (let r = 0; r < BOARD_ROWS; r++) {
@@ -44,26 +44,28 @@ export const applyItSphereEffect = (board: Board): Board => {
     }
   });
 
-  if (!target) return board;
+  if (!target) return { board, matchedPositions: [] };
 
+  const matchedPositions: Position[] = [];
   const newBoard = board.map((r) => [...r]);
 
   for (let r = 0; r < BOARD_ROWS; r++) {
     for (let c = 0; c < newBoard[r].length; c++) {
       if (newBoard[r][c] === target) {
+        matchedPositions.push({ row: r, col: c });
         newBoard[r][c] = null;
       }
     }
   }
 
-  return newBoard;
+  return { board: newBoard, matchedPositions };
 };
 
 /** удалить ВСЕ фигуры типа выбранной */
 export const applyItSphereAt = (
   board: Board,
   pos: Position
-): Board => {
+): { board: Board, matchedPositions: Position[] } => {
   const { row, col } = pos;
 
   if (
@@ -72,21 +74,23 @@ export const applyItSphereAt = (
     row >= BOARD_ROWS ||
     col >= (board[0]?.length ?? 0)
   ) {
-    return board;
+    return { board, matchedPositions: [] };
   }
 
   const targetFig = board[row][col];
-  if (!isUsable(targetFig)) return board;
+  if (!isUsable(targetFig)) return { board, matchedPositions: [] };
 
+  const matchedPositions: Position[] = [];
   const newBoard = board.map((r) => [...r]);
 
   for (let r = 0; r < BOARD_ROWS; r++) {
     for (let c = 0; c < newBoard[r].length; c++) {
       if (newBoard[r][c] === targetFig) {
+        matchedPositions.push({ row: r, col: c });
         newBoard[r][c] = null;
       }
     }
   }
 
-  return newBoard;
+  return { board: newBoard, matchedPositions };
 };

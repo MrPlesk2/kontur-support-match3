@@ -62,7 +62,7 @@ export const useGameLogic = () => {
     setMoves: gameState.setMoves,
     setModifiers: gameState.setModifiers,
     setGoals: gameState.setGoals,
-    processMatches, // Передаем processMatches в useBonuses
+    processMatches,
   });
 
   const {
@@ -82,6 +82,7 @@ export const useGameLogic = () => {
       setIsSwapping: gameState.setIsSwapping,
       setIsAnimating: gameState.setIsAnimating,
       setMoves: gameState.setMoves,
+      setMatches: gameState.setMatches,
     },
     areAdjacent,
     swapFigures,
@@ -94,7 +95,8 @@ export const useGameLogic = () => {
     setIsAnimating: gameState.setIsAnimating,
     setMoves: gameState.setMoves,
     setGoals: gameState.setGoals,
-    processMatches, // Передаем processMatches в useInputHandlers
+    setMatches: gameState.setMatches,
+    processMatches,
   });
 
   return {

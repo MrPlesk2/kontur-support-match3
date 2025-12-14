@@ -22,7 +22,7 @@ const isRemovable = (f: Figure | null) => {
 };
 
 /** случайное удаление */
-export const applyRemoteWorkEffect = (board: Board): Board => {
+export const applyRemoteWorkEffect = (board: Board): { board: Board, matchedPositions: Position[] } => {
   const positions: Position[] = [];
 
   for (let r = 0; r < BOARD_ROWS; r++) {
@@ -33,7 +33,7 @@ export const applyRemoteWorkEffect = (board: Board): Board => {
     }
   }
 
-  if (positions.length === 0) return board;
+  if (positions.length === 0) return { board, matchedPositions: [] };
 
   const { row, col } =
     positions[Math.floor(Math.random() * positions.length)];
@@ -41,14 +41,14 @@ export const applyRemoteWorkEffect = (board: Board): Board => {
   const newBoard = board.map((r) => [...r]);
   newBoard[row][col] = null;
 
-  return newBoard;
+  return { board: newBoard, matchedPositions: [{ row, col }] };
 };
 
 /** удаление по выбранной клетке */
 export const applyRemoteWorkAt = (
   board: Board,
   pos: Position
-): Board => {
+): { board: Board, matchedPositions: Position[] } => {
   const { row, col } = pos;
 
   if (
@@ -57,13 +57,13 @@ export const applyRemoteWorkAt = (
     row >= BOARD_ROWS ||
     col >= (board[0]?.length ?? 0)
   ) {
-    return board;
+    return { board, matchedPositions: [] };
   }
 
-  if (!isRemovable(board[row][col])) return board;
+  if (!isRemovable(board[row][col])) return { board, matchedPositions: [] };
 
   const newBoard = board.map((r) => [...r]);
   newBoard[row][col] = null;
 
-  return newBoard;
+  return { board: newBoard, matchedPositions: [{ row, col }] };
 };

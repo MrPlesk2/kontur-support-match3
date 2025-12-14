@@ -31,10 +31,10 @@ export const LEVELS: Level[] = [
         collected: 0,
       },
     ],
-    // ["careerGrowth", "knowledgeBase", "sportCompensation"] 
-    // ["openGuide", "remoteWork", "itSphere"] 
+    // ["careerGrowth", "knowledgeBase", "sportCompensation"]
+    // ["openGuide", "remoteWork", "itSphere"]
     // ["modernProducts", "friendlyTeam", "sportCompensation"]
-    bonuses: ["modernProducts", "friendlyTeam", "sportCompensation"],
+    bonuses: ["openGuide", "remoteWork", "itSphere"],
     moves: 22,
     availableFigures: [
       "roundMessage",
