@@ -5,6 +5,8 @@ import "./game-field.styles.css";
 type GameFieldProps = {
   board: Board;
   selectedPosition: Position | null;
+  modernProductsSourcePos: Position | null;
+  activeBonusType?: string;
   matches: Match[];
   specialCells: SpecialCell[];
   onCellClick: (position: Position) => void;
@@ -15,6 +17,8 @@ type GameFieldProps = {
 export const GameField = ({
   board,
   selectedPosition,
+  modernProductsSourcePos,
+  activeBonusType,
   matches,
   specialCells,
   onCellClick,
@@ -41,16 +45,22 @@ export const GameField = ({
       {board.map((row, rowIndex) =>
         row.map((figure, colIndex) => {
           const specialCell = getSpecialCell(rowIndex, colIndex);
+          const isSelected =
+            selectedPosition?.row === rowIndex &&
+            selectedPosition?.col === colIndex;
+          
+          const isModernProductsSource =
+            activeBonusType === "modernProducts" &&
+            modernProductsSourcePos?.row === rowIndex &&
+            modernProductsSourcePos?.col === colIndex;
 
           return (
             <Cell
               key={`${rowIndex}-${colIndex}`}
               figure={figure}
               position={{ row: rowIndex, col: colIndex }}
-              isSelected={
-                selectedPosition?.row === rowIndex &&
-                selectedPosition?.col === colIndex
-              }
+              isSelected={isSelected}
+              isModernProductsSource={isModernProductsSource}
               isMatched={isPartOfMatch(rowIndex, colIndex)}
               specialCell={specialCell}
               onClick={onCellClick}

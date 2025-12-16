@@ -1,13 +1,5 @@
-import { useRef } from "react";
-import { 
-  Position, 
-  Bonus, 
-  Board, 
-  LevelState, 
-  ActiveBonus,
-  Match,
-  Figure 
-} from "types";
+import { useState } from "react";
+import { Position, Bonus, Board, LevelState, ActiveBonus, Match, Figure } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, findAllMatches } from "@utils/game-logic";
 import { ANIMATION_DURATION } from "consts";
@@ -64,7 +56,7 @@ export const useInputHandlers = ({
   setMatches,
   processMatches,
 }: UseInputHandlersProps) => {
-  const modernSourceRef = useRef<Position | null>(null);
+  const [modernProductsSourcePos, setModernProductsSourcePos] = useState<Position | null>(null);
 
   const applyAndFinalizeBonus = async (
     type: string,
@@ -72,7 +64,6 @@ export const useInputHandlers = ({
     matchedPositions: Position[],
     effect: any
   ) => {
-    // списываем бонус
     setBonuses((prev) => {
       const next = [...prev];
       const idx = next.findIndex((b) => b.type === type);
@@ -86,14 +77,9 @@ export const useInputHandlers = ({
     effect?.onApplyGoals?.(setGoals);
 
     setIsAnimating(true);
-
     try {
-      // 1. Показываем анимацию матча для удаляемых фигур
       if (matchedPositions.length > 0) {
-        // Создаем временные матчи для анимации
         const tempMatches: Match[] = [];
-        
-        // Группируем позиции по типу фигур (для it-sphere все одного типа)
         const figureTypes = new Map<Figure, Position[]>();
         
         matchedPositions.forEach(pos => {
@@ -105,42 +91,33 @@ export const useInputHandlers = ({
             figureTypes.get(figure)!.push(pos);
           }
         });
-        
-        // Создаем матчи для каждого типа фигур
+
         figureTypes.forEach((positions, figure) => {
-          tempMatches.push({
-            positions,
-            figure
-          });
+          tempMatches.push({ positions, figure });
         });
-        
+
         setMatches(tempMatches);
         await new Promise(resolve => setTimeout(resolve, ANIMATION_DURATION));
         setMatches([]);
       }
 
-      // 2. показываем удаление
       setBoard([...boardWithHoles]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 3. гравитация
       let updatedBoard = applyGravity(boardWithHoles);
       setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 4. заполнение
       updatedBoard = fillEmptySlots(updatedBoard);
       setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // 5. обработать возможные матчи, если они есть
       if (processMatches) {
         await processMatches(updatedBoard);
       }
     } finally {
       setIsAnimating(false);
       setActiveBonus(null);
-      modernSourceRef.current = null;
     }
   };
 
@@ -154,31 +131,34 @@ export const useInputHandlers = ({
       return;
     }
 
-    // --- TARGETED BONUS HANDLING ---
     if (activeBonus && activeBonus.isActive && activeBonus.type !== "careerGrowth") {
       const effect = BONUS_EFFECTS[activeBonus.type];
       if (effect?.applyAt) {
-        // remoteWork: однонажатие в точке
         if (activeBonus.type === "remoteWork") {
           const result = effect.applyAt(board, position);
           await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
         }
-        // itSphere: однонажатие на фигуру — удаляет все такого типа
+
         if (activeBonus.type === "itSphere") {
           const result = effect.applyAt(board, position);
           await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
         }
-        // modernProducts: двухшаговый - сначала выбираем исходную фигурку, затем цель
+
         if (activeBonus.type === "modernProducts") {
-          if (!modernSourceRef.current) {
+          if (!modernProductsSourcePos) {
             const fig = board[position.row][position.col];
             if (!fig) return;
-            modernSourceRef.current = position;
+            setModernProductsSourcePos(position);
             return;
           }
-          const sourcePos = modernSourceRef.current;
+
+          // Второй клик: применяем бонус
+          const sourcePos = modernProductsSourcePos;
+          // СРАЗУ сбрасываем выделение
+          setModernProductsSourcePos(null);
+          
           const result = effect.applyAt(board, sourcePos as Position, position);
           await applyAndFinalizeBonus(activeBonus.type, result.board, result.matchedPositions, effect);
           return;
@@ -186,7 +166,6 @@ export const useInputHandlers = ({
       }
     }
 
-    // --- EXISTING CLICK / SWAP LOGIC ---
     if (!gameState.selectedPosition) {
       gameState.setSelectedPosition(position);
     } else {
@@ -211,10 +190,11 @@ export const useInputHandlers = ({
     ) {
       return;
     }
-    // Разрешаем перетаскивание при активном career-growth
+
     if (activeBonus && activeBonus.isActive && activeBonus.type !== "careerGrowth") {
       return;
     }
+
     gameState.setSelectedPosition(position);
   };
 
@@ -228,10 +208,11 @@ export const useInputHandlers = ({
     ) {
       return;
     }
-    // Разрешаем перетаскивание при активном career-growth
+
     if (activeBonus && activeBonus.isActive && activeBonus.type !== "careerGrowth") {
       return;
     }
+
     if (areAdjacent(gameState.selectedPosition, position)) {
       swapFigures(
         gameState.selectedPosition,
@@ -247,12 +228,13 @@ export const useInputHandlers = ({
     if (levelState.isLevelTransition || gameState.isAnimating) {
       return;
     }
+    setModernProductsSourcePos(null);
     handleBonus(type, board);
   };
 
   const resetSelection = () => {
     gameState.setSelectedPosition(null);
-    modernSourceRef.current = null;
+    setModernProductsSourcePos(null);
   };
 
   return {
@@ -261,5 +243,6 @@ export const useInputHandlers = ({
     handleDragOver,
     handleUseBonus,
     resetSelection,
+    modernProductsSourcePos,
   };
 };

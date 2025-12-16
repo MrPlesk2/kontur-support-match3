@@ -10,11 +10,8 @@ import { SpecialCell, Level } from "types";
 export const useGameLogic = () => {
   const { board, setBoard } = useBoardState();
   const gameState = useGameState();
-
-  const [currentSpecialCells, setCurrentSpecialCells] = useState<SpecialCell[]>(
-    []
-  );
-
+  const [currentSpecialCells, setCurrentSpecialCells] = useState<SpecialCell[]>([]);
+  
   const { levelState, currentLevel, handleLevelStart } = useLevelManagement({
     setBoard,
     gameState,
@@ -65,12 +62,13 @@ export const useGameLogic = () => {
     processMatches,
   });
 
-  const {
-    handleCellClick,
-    handleDragStart,
-    handleDragOver,
-    handleUseBonus,
+  const { 
+    handleCellClick, 
+    handleDragStart, 
+    handleDragOver, 
+    handleUseBonus, 
     resetSelection,
+    modernProductsSourcePos,
   } = useInputHandlers({
     levelState,
     gameState: {
@@ -102,6 +100,7 @@ export const useGameLogic = () => {
   return {
     board,
     selectedPosition: gameState.selectedPosition,
+    modernProductsSourcePos,
     isSwapping: gameState.isSwapping,
     isAnimating: gameState.isAnimating,
     matches: gameState.matches,
@@ -112,10 +111,8 @@ export const useGameLogic = () => {
     activeBonus: gameState.activeBonus,
     modifiers: gameState.modifiers,
     specialCells: currentSpecialCells,
-
     levelState,
     currentLevel: currentLevelWithSpecialCells,
-
     handleCellClick,
     handleDragStart,
     handleDragOver,
