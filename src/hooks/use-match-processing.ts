@@ -155,10 +155,24 @@ export const useMatchProcessing = ({
               const idx = next.findIndex((g) => g.figure === "teamCell");
               if (idx !== -1) {
                 const inc = modifiers.doubleGoalProgress ? collectedTeam * 2 : collectedTeam;
+                const newCollected = Math.min(next[idx].collected + inc, next[idx].target);
                 next[idx] = {
                   ...next[idx],
-                  collected: Math.min(next[idx].collected + inc, next[idx].target),
+                  collected: newCollected,
                 };
+                
+                // Обновляем изображение команды в зависимости от прогресса
+                if (currentLevel?.id === 5) {
+                  const progress = newCollected / next[idx].target;
+                  if (progress >= 1) {
+                    boardToProcess = progressTeamHappyThree(boardToProcess);
+                  } else if (progress >= 0.66) {
+                    boardToProcess = progressTeamHappyTwo(boardToProcess);
+                  } else if (progress >= 0.33) {
+                    boardToProcess = progressTeamHappyOne(boardToProcess);
+                  }
+                  setBoard([...boardToProcess]);
+                }
               }
               return next;
             });
@@ -297,10 +311,17 @@ export const useMatchProcessing = ({
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
+          // После заполнения убедимся, что team cells присутствуют
+          updatedSpecialCells.forEach((sc) => {
+            if (sc.type === "team" && sc.isActive !== false) {
+              if (boardToProcess[sc.row]) {
+                boardToProcess[sc.row][sc.col] = boardToProcess[sc.row][sc.col] ?? "teamCell";
+              }
+            }
+          });
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
-
 
         // ---------------------------
         // PROCESS STARS
@@ -355,16 +376,20 @@ export const useMatchProcessing = ({
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
 
-        // CHECK IF MORE MATCHES
+        // CHECK IF MORE MATCHES, DIAMONDS OR STARS
         const newMatches = findAllMatches(boardToProcess);
         const moreStars: Position[] = [];
+        const moreDiamonds: Position[] = [];
         for (let col = 0; col < boardToProcess[0].length; col++) {
           if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
             moreStars.push({ row: BOARD_ROWS - 1, col });
           }
+          if (boardToProcess[BOARD_ROWS - 1]?.[col] === "diamond") {
+            moreDiamonds.push({ row: BOARD_ROWS - 1, col });
+          }
         }
 
-        if (newMatches.length === 0 && moreStars.length === 0) {
+        if (newMatches.length === 0 && moreStars.length === 0 && moreDiamonds.length === 0) {
           hasMatches = false;
           break;
         }

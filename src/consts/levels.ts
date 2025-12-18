@@ -10,7 +10,7 @@ export const LEVELS: Level[] = [
       { figure: "bonnet", target: 3, collected: 0 },
       { figure: "briefcase", target: 3, collected: 0 },
     ],
-    bonuses: ["friendlyTeam", "friendlyTeam", "sportCompensation"],
+    bonuses: ["knowledgeBase", "friendlyTeam", "careerGrowth"],
     moves: 21,
     availableFigures: [
       "pencil",
@@ -34,7 +34,7 @@ export const LEVELS: Level[] = [
     // ["careerGrowth", "knowledgeBase", "sportCompensation"]
     // ["openGuide", "remoteWork", "itSphere"]
     // ["modernProducts", "friendlyTeam", "sportCompensation"]
-    bonuses: ["modernProducts", "friendlyTeam", "sportCompensation"],
+    bonuses: ["sportCompensation", "modernProducts", "remoteWork"],
     moves: 22,
     availableFigures: [
       "roundMessage",
@@ -62,7 +62,7 @@ export const LEVELS: Level[] = [
     goals: [
       { figure: "star", target: 5, collected: 0 }, // Цель - собрать 5 звезд
     ],
-    bonuses: ["careerGrowth", "friendlyTeam", "sportCompensation"],
+    bonuses: ["remoteWork", "sportCompensation", "itSphere"],
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     starPositions: [
@@ -86,7 +86,7 @@ export const LEVELS: Level[] = [
         collected: 0,
       }
     ],
-    bonuses: ["careerGrowth", "friendlyTeam", "sportCompensation"],
+    bonuses: ["remoteWork", "dms", "itSphere"],
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     diamondPositions: [
@@ -121,7 +121,7 @@ export const LEVELS: Level[] = [
         collected: 0,
       }
     ],
-    bonuses: ["careerGrowth", "friendlyTeam", "sportCompensation"],
+    bonuses: ["itSphere", "openGuide", "remoteWork"],
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     teamPositions: [

@@ -101,6 +101,7 @@ export const createInitialBoard = (level?: Level): Board => {
 
 export const fillEmptySlots = (board: Board, level?: Level): Board => {
   const newBoard = board.map((row) => [...row]);
+
   const availableFigures = level?.availableFigures || [
     "pencil",
     "questionBook",

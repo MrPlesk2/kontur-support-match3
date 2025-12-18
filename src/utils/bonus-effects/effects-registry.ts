@@ -17,6 +17,7 @@ import {
   applyModernProductsAt,
 } from "./modern-products";
 import { applyItSphereEffect, applyItSphereAt } from "./it-sphere";
+import { applyDMSEffect } from "./dms"
 
 export type BonusEffect = {
   apply: (board: Board) => { board: Board, matchedPositions: Position[] };
@@ -82,5 +83,11 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
     apply: applyItSphereEffect,
     applyAt: applyItSphereAt,
     isInstant: false,
+  },
+
+  dms: {
+    apply: (board) => ({ board: applyDMSEffect(board), matchedPositions: [] }),
+    isInstant: true,
+    onApply: (setMoves) => setMoves((m) => m + 3),
   },
 };

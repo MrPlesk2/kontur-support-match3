@@ -1,11 +1,13 @@
 import { useCallback } from "react";
-import { Bonus, Board, ActiveBonus, GameModifiers, Goal } from "types";
+import { Bonus, Board, ActiveBonus, GameModifiers, Goal, BonusType } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import {
   applyGravity,
   fillEmptySlots,
   findAllMatches,
+  applyHorizontalGravity,
 } from "@utils/game-logic";
+import { LEVELS } from "consts/levels";
 
 type UseBonusesProps = {
   setBonuses: (updater: (bonuses: Bonus[]) => Bonus[]) => void;
@@ -34,22 +36,33 @@ export const useBonuses = ({
    * ✅ ЗАКОНЧЕННЫЙ ЦИКЛ ОБНОВЛЕНИЯ ПОЛЯ
    * работает даже без матчей
    */
-  const applyBonusBoardUpdate = async (boardWithHoles: Board, effect: any) => {
-    // 1. показываем удаление
-    setBoard([...boardWithHoles]);
-    await new Promise(resolve => setTimeout(resolve, 200));
+  const applyBonusBoardUpdate = async (boardWithHoles: Board, bonusType: BonusType) => {
+    const bonusChange = [
+      "friendlyTeam",
+      "remoteWork",
+      "modernProducts",
+      "itSphere",
+    ];
 
-    // 2. гравитация
-    let next = applyGravity(boardWithHoles);
-    setBoard([...next]);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    if (bonusChange.includes(bonusType)) {
+      // 1. показываем удаление
+      setBoard([...boardWithHoles]);
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-    // 3. заполнение
-    next = fillEmptySlots(next);
-    setBoard([...next]);
-    await new Promise(resolve => setTimeout(resolve, 200));
+      // 2. гравитация
+      let next = applyGravity(boardWithHoles);
+      setBoard([...next]);
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-    return next;
+      // 3. заполнение
+      next = fillEmptySlots(next);
+      setBoard([...next]);
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      return next;
+    }
+
+    return boardWithHoles;
   };
 
   /**
@@ -90,8 +103,8 @@ export const useBonuses = ({
       setIsAnimating(true);
 
       const result = effect.apply(board);
-
-      applyBonusBoardUpdate(result.board, effect).then(async (finalBoard) => {
+      console.log(type);
+      applyBonusBoardUpdate(result.board, type).then(async (finalBoard) => {
         // Вызов коллбэков
         effect.onApply?.(setMoves);
         effect.onApplyGoals?.(setGoals);

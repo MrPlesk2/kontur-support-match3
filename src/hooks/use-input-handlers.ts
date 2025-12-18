@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Position, Bonus, Board, LevelState, ActiveBonus, Match, Figure } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
-import { applyGravity, fillEmptySlots, findAllMatches } from "@utils/game-logic";
-import { ANIMATION_DURATION } from "consts";
+import { applyGravity, fillEmptySlots, findAllMatches, applyHorizontalGravity } from "@utils/game-logic";
+import { ANIMATION_DURATION, BOARD_ROWS, LEVELS } from "consts";
 
 type GameBoardState = {
   selectedPosition: Position | null;
@@ -58,6 +58,58 @@ export const useInputHandlers = ({
 }: UseInputHandlersProps) => {
   const [modernProductsSourcePos, setModernProductsSourcePos] = useState<Position | null>(null);
 
+  // Функция для обработки алмазов и звезд в нижнем ряду
+  const processSpecialFigures = (currentBoard: Board): { board: Board; hasSpecialFigures: boolean } => {
+    let boardCopy = currentBoard.map(row => [...row]);
+    let hasSpecialFigures = false;
+
+    // Проверяем и удаляем алмазы в нижнем ряду
+    for (let col = 0; col < boardCopy[0].length; col++) {
+      if (boardCopy[BOARD_ROWS - 1]?.[col] === "diamond") {
+        boardCopy[BOARD_ROWS - 1][col] = null;
+        hasSpecialFigures = true;
+        
+        // Обновляем цели для алмазов
+        setGoals((prev) => {
+          const next = [...prev];
+          const idx = next.findIndex((g) => g.figure === "diamond");
+          if (idx !== -1) {
+            const inc = 1; // один алмаз
+            next[idx] = {
+              ...next[idx],
+              collected: Math.min(next[idx].collected + inc, next[idx].target),
+            };
+          }
+          return next;
+        });
+      }
+    }
+
+    // Проверяем и удаляем звезды в нижнем ряду
+    for (let col = 0; col < boardCopy[0].length; col++) {
+      if (boardCopy[BOARD_ROWS - 1]?.[col] === "star") {
+        boardCopy[BOARD_ROWS - 1][col] = null;
+        hasSpecialFigures = true;
+        
+        // Обновляем цели для звезд
+        setGoals((prev) => {
+          const next = [...prev];
+          const idx = next.findIndex((g) => g.figure === "star");
+          if (idx !== -1) {
+            const inc = 1; // одна звезда
+            next[idx] = {
+              ...next[idx],
+              collected: Math.min(next[idx].collected + inc, next[idx].target),
+            };
+          }
+          return next;
+        });
+      }
+    }
+
+    return { board: boardCopy, hasSpecialFigures };
+  };
+
   const applyAndFinalizeBonus = async (
     type: string,
     boardWithHoles: Board,
@@ -107,8 +159,53 @@ export const useInputHandlers = ({
       let updatedBoard = applyGravity(boardWithHoles);
       setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Проверяем и обрабатываем алмазы/звезды в нижнем ряду после гравитации
+      let hasMoreSpecialFigures = true;
+      while (hasMoreSpecialFigures) {
+        const specialResult = processSpecialFigures(updatedBoard);
+        if (specialResult.hasSpecialFigures) {
+          updatedBoard = specialResult.board;
+          setBoard([...updatedBoard]);
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          updatedBoard = applyGravity(updatedBoard);
+          setBoard([...updatedBoard]);
+          await new Promise(resolve => setTimeout(resolve, 200));
+        } else {
+          hasMoreSpecialFigures = false;
+        }
+      }
 
-      updatedBoard = fillEmptySlots(updatedBoard);
+      let updatedBoardIsChanged = applyHorizontalGravity(updatedBoard);
+      
+      if (updatedBoardIsChanged.isChanged) {
+        setBoard([...updatedBoardIsChanged.board]);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        updatedBoard = applyGravity(updatedBoardIsChanged.board);
+        setBoard(updatedBoard);
+        await new Promise((r) => setTimeout(r, ANIMATION_DURATION/2));
+        
+        // Снова проверяем алмазы/звезды после горизонтальной гравитации
+        hasMoreSpecialFigures = true;
+        while (hasMoreSpecialFigures) {
+          const specialResult = processSpecialFigures(updatedBoard);
+          if (specialResult.hasSpecialFigures) {
+            updatedBoard = specialResult.board;
+            setBoard([...updatedBoard]);
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            updatedBoard = applyGravity(updatedBoard);
+            setBoard([...updatedBoard]);
+            await new Promise(resolve => setTimeout(resolve, 200));
+          } else {
+            hasMoreSpecialFigures = false;
+          }
+        }
+      }
+
+      console.log(LEVELS[levelState.currentLevel - 1].availableFigures);
+      updatedBoard = fillEmptySlots(updatedBoard, LEVELS[levelState.currentLevel - 1]);
       setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
