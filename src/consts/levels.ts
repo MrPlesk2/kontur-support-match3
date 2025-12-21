@@ -2,7 +2,7 @@ import { Level } from "types";
 
 export const LEVELS: Level[] = [
   {
-    id: 1,
+    id: 5,
     name: "Новичок",
     description: "Начни свой путь в IT!",
     goals: [
@@ -10,7 +10,7 @@ export const LEVELS: Level[] = [
       { figure: "bonnet", target: 3, collected: 0 },
       { figure: "briefcase", target: 3, collected: 0 },
     ],
-    bonuses: ["knowledgeBase", "friendlyTeam", "careerGrowth"],
+    bonuses: ["modernProducts", "friendlyTeam", "sportCompensation"], // ["knowledgeBase", "friendlyTeam", "careerGrowth"]
     moves: 21,
     availableFigures: [
       "pencil",
@@ -111,7 +111,7 @@ export const LEVELS: Level[] = [
     ],
   },
   {
-    id: 5,
+    id: 1,
     name: "Тимлид",
     description: "Растёшь над собой!",
     goals: [
@@ -125,6 +125,25 @@ export const LEVELS: Level[] = [
     moves: 23,
     availableFigures: ["roundMessage", "letter", "smartphone", "star", "phone"],
     teamPositions: [
+      /*
+      { row: 1, col: 1 },
+      { row: 1, col: 2 },
+      { row: 1, col: 3 },
+      { row: 1, col: 4 },
+      { row: 1, col: 5 },
+
+      { row: 4, col: 1 },
+      { row: 4, col: 2 },
+      { row: 4, col: 3 },
+      { row: 4, col: 4 },
+      { row: 4, col: 5 },
+
+      { row: 2, col: 1 },
+      { row: 3, col: 1 },
+      { row: 2, col: 5 },
+      { row: 3, col: 5 },
+       */
+
       { row: 2, col: 2 },
       { row: 2, col: 3 },
       { row: 2, col: 4 },
