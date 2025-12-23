@@ -20,8 +20,6 @@ export const LevelTransition = ({
 
   const availableBonuses = LEVELS[currentLevel].bonuses
   
-  const currentLevelName =
-    LEVEL_NAMES[currentLevel] || `Уровень ${currentLevel}`;
   const nextLevelName = LEVEL_NAMES[nextLevel] || `Уровень ${nextLevel}`;
 
   const handleStart = () => {
@@ -32,8 +30,8 @@ export const LevelTransition = ({
     <div className="lt-overlay">
       <div className="lt-modal">
         <PromotionHeader
-          currentLevelName={currentLevelName}
           nextLevelName={nextLevelName}
+          levelDescription={LEVELS[currentLevel].description}
         />
         <BonusSelectionCard
           availableBonuses={availableBonuses}

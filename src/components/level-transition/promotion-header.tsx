@@ -1,24 +1,20 @@
 import "./promotion-header.styles.css";
 
 type PromotionHeaderProps = {
-  currentLevelName: string;
   nextLevelName: string;
+  levelDescription: string;
 };
 
 export const PromotionHeader = ({
-  currentLevelName,
   nextLevelName,
+  levelDescription
 }: PromotionHeaderProps) => {
   return (
     <div className="ph-container">
-      <h2 className="ph-title">Поздравляем!</h2>
-      <p className="ph-text">
-        Вы завершили <strong>{currentLevelName}</strong>
-      </p>
       <div className="ph-promotion">
-        <h3>Повышение!</h3>
+        <h1>{nextLevelName}</h1>
         <p>
-          Теперь вы <strong>{nextLevelName}</strong>
+          {levelDescription}
         </p>
       </div>
     </div>
