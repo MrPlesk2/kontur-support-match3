@@ -2,6 +2,19 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: #F6F6F6; /* серый фон */
+  border-radius: 20px; /* скругление для серого фона */
+  padding: 20px; /* отступ внутри серого фона */
+}
+
+.bsc-white-card {
+  background: white;
+  border-radius: 16px; /* скругление для белой карточки */
+  padding: 24px; /* отступ внутри белой карточки */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* легкая тень для карточки */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .bsc-title {
@@ -17,4 +30,5 @@
   color: #2291FF;
   font-weight: 600;
   font-size: 14px;
+  margin-top: 8px;
 }

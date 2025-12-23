@@ -9,15 +9,15 @@
 }
 
 .lt-modal {
-  background: white;
+  background: #F6F6F6; /* изменили с white на #F6F6F6 */
   border-radius: 24px;
-  padding: 32px;
+  padding: 24px; /* уменьшили общий padding */
   width: 90%;
-  max-width: 420px;
+  max-width: 520px; /* немного увеличили */
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .lt-start-button {
@@ -30,6 +30,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 8px;
 }
 
 .lt-start-button:disabled {
