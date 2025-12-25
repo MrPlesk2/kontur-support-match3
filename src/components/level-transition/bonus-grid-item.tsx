@@ -1,5 +1,5 @@
 import { BonusType } from "types";
-import { BONUS_PATHS, BONUS_NAMES, BONUS_DESCRIPTIONS } from "consts"; // добавьте BONUS_DESCRIPTIONS
+import { BONUS_PATHS, BONUS_NAMES, BONUS_EFFECTS, BONUS_DESCRIPTIONS } from "consts";
 import "./bonus-grid-item.styles.css";
 
 type BonusGridItemProps = {
@@ -31,6 +31,7 @@ export const BonusGridItem = ({
       <div className="bgi-text-block">
         <span className="bgi-name">{BONUS_NAMES[type]}</span>
         <p className="bgi-description">{BONUS_DESCRIPTIONS[type]}</p>
+        <p className="bgi-effect">{BONUS_EFFECTS[type]}</p>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export const BonusSelectionCard = ({
   return (
     <div className="bsc-container">
       <div className="bsc-white-card">
-        <h4 className="bsc-title">Выберите 2 бонуса:</h4>
+        <h4 className="bsc-title">Выбери 2 бонуса:</h4>
         <BonusGrid
           bonuses={availableBonuses}
           selected={selectedBonuses}

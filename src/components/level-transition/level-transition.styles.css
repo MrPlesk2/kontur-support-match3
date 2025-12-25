@@ -11,13 +11,12 @@
 .lt-modal {
   background: #F6F6F6; /* изменили с white на #F6F6F6 */
   border-radius: 24px;
-  padding: 24px; /* уменьшили общий padding */
+  padding: 20px; /* уменьшили общий padding */
   width: 90%;
-  max-width: 520px; /* немного увеличили */
+  max-width: 540px; /* немного увеличили */
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .lt-start-button {
@@ -25,12 +24,19 @@
   color: white;
   border: none;
   border-radius: 25px;
-  padding: 14px;
-  font-size: 16px;
+  padding: 14px 32px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 8px;
+  display: inline-block;
+  width: auto;
+  min-width: 140px;
+  text-align: center;
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+  white-space: nowrap;
 }
 
 .lt-start-button:disabled {

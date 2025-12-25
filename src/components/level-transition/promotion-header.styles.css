@@ -2,31 +2,30 @@
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.ph-title {
-  font-size: 28px;
-  margin: 0;
-  background: linear-gradient(135deg, #366AF3, #366AF3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.ph-promotion h1 {
+  margin-bottom: 14px;
+  font-size: 20px;
+  font-weight: 700;
+  
+}
+
+.ph-promotion p {
+  margin: 4px 30px 0;
+  font-size: 15px;
+
+}
+
+
+.ph-promotion h2 {
+  margin: 0 0 6px;
+  font-size: 19px;
   font-weight: 700;
 }
 
-.ph-text, .ph-promotion p {
-  margin: 4px 0;
-  color: #555;
-  font-size: 16px;
-}
-
-.ph-promotion h3 {
-  margin: 8px 0 4px;
-  font-size: 20px;
-  color: #FC7630;
-  font-weight: 600;
-}
-
-.ph-promotion strong {
-  color: #366AF3;
+.highlight {
+  color: #FF8D28;
 }

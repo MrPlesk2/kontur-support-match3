@@ -11,7 +11,7 @@ import {
   applyRemoteWorkEffect,
   applyRemoteWorkAt,
 } from "./remote-work";
-import { applyOpenGuideEffect, onApplyOpenGuide } from "./open-guide";
+import { onApplyOpenGuide } from "./open-guide";
 import {
   applyModernProductsEffect,
   applyModernProductsAt,

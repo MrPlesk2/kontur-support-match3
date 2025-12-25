@@ -1,0 +1,92 @@
+.bonus-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  width: 220px;
+  z-index: 1000;
+  pointer-events: none;
+  animation: tooltipFadeIn 0.2s ease;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bonus-tooltip--left {
+  right: calc(100% + 15px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bonus-tooltip--left::before {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: white;
+}
+
+.bonus-tooltip--right {
+  left: calc(100% + 15px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.bonus-tooltip--right::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+  width: 12px;
+  height: 12px;
+  background: white;
+}
+
+.bonus-tooltip-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.bonus-tooltip-effect {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  text-align: center;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .bonus-tooltip {
+    width: 180px;
+    padding: 10px;
+    top: auto !important;
+    bottom: calc(100% + 15px);
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+  }
+  
+  .bonus-tooltip--left::before,
+  .bonus-tooltip--right::before {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: -6px;
+    transform: translateX(-50%) rotate(45deg);
+  }
+}

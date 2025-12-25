@@ -9,20 +9,19 @@
 
 .bsc-white-card {
   background: white;
-  border-radius: 16px; /* скругление для белой карточки */
-  padding: 24px; /* отступ внутри белой карточки */
+  border-radius: 18px; /* скругление для белой карточки */
+  padding: 15px 30px 10px; /* отступ внутри белой карточки */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* легкая тень для карточки */
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 5px;
 }
 
 .bsc-title {
   margin: 0;
   font-size: 18px;
-  color: #333;
   text-align: center;
-  font-weight: 600;
+
 }
 
 .bsc-hint {
@@ -30,5 +29,5 @@
   color: #2291FF;
   font-weight: 600;
   font-size: 14px;
-  margin-top: 8px;
+  margin-top: 7px;
 }

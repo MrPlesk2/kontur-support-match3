@@ -1,5 +1,17 @@
 import { BonusType } from "types/bonus-type";
 
+export const BONUS_NAMES: Record<BonusType, string> = {
+  friendlyTeam: "Дружная команда",
+  careerGrowth: "Буст карьеры",
+  sportCompensation: "Компенсация на спорт",
+  knowledgeBase: "База знаний",
+  remoteWork: "Удаленка",
+  openGuide: "Открытое руководство",
+  modernProducts: "Современные продукты",
+  itSphere: "IT-сфера",
+  dms: "Забота о здоровье",
+};
+
 export const BONUS_PATHS: Record<BonusType, string> = {
   friendlyTeam: "src/assets/bonuses/friendlyTeam.svg",
   careerGrowth: "src/assets/bonuses/careerGrowth.svg",
@@ -12,13 +24,26 @@ export const BONUS_PATHS: Record<BonusType, string> = {
   dms: "src/assets/bonuses/dms.svg",
 };
 
-export const BONUS_DESCRIPTIONS: Record<BonusType, string> = {
-  friendlyTeam: "Перемешивает все фигурки на поле, создавая новые комбинации для сбора рядов",
-  careerGrowth: "Удваивает очки за следующий ряд и засчитывает следующий ряд как два в счетчике цели",
+export const BONUS_EFFECTS: Record<BonusType, string> = {
+  friendlyTeam: "Перемешивает все фигурки на поле",
+  careerGrowth: "Удваивает очки и прогресс за все ряды следующего хода",
   sportCompensation: "Дает дополнительный ход",
-  knowledgeBase: "Доступ к обширной базе знаний и документации",
-  remoteWork: "Возможность работать удаленно из любой точки мира",
-  openGuide: "Открытость руководства и прозрачность коммуникации",
-  modernProducts: "Работа с современными технологиями и продуктами",
-  itSphere: "Развитие в перспективной IT-сфере",
+  knowledgeBase: "Дает 2 дополнительных хода",
+  remoteWork: "Удаляет выбранную фигурку с поля",
+  openGuide: "Автоматически засчитывает 1 ряд для цели",
+  modernProducts: "Заменяет фигурку на выбранную",
+  itSphere: "Убирает все фигурки выбранного типа на поле",
+  dms: 'Дает 3 дополнительных хода'
+};
+
+export const BONUS_DESCRIPTIONS: Record<BonusType, string> = {
+  friendlyTeam: "Помогаем и создаем друг для друга комфортную атмосферу.",
+  careerGrowth: "В поддержку Контура можно прийти без опыта и вырасти меньше чем за год.",
+  sportCompensation: "Дополнительная поддержка для занятий спортом и поддержания энергии.",
+  knowledgeBase: "Быстрый доступ к информации, которая помогает принимать решения увереннее и быстрее.",
+  remoteWork: "Можно работать из дома. Отправим технику по России и компенсируем расходы на интернет.",
+  openGuide: "Прозрачное общение, понятные цели и уверенность в том, что тебя слышат.",
+  modernProducts: "Работа с актуальными сервисами, которые упрощают жизнь каждого третьего бизнеса в России.",
+  itSphere: "Погружение в технологичную среду, где ценится гибкость, открытость высказывать свое мнение и расти в среде профи.",
+  dms: 'ДМС с выбором из двух страховых, психолог и реальный work-life balance.'
 };

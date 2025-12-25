@@ -6,7 +6,7 @@
   padding: 10px 12px; /* уменьшили вертикальный padding */
   border-radius: 16px;
   width: 100%;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* Остальные стили оставляем как есть */
@@ -21,8 +21,8 @@
 }
 
 .bgi-circle {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   background: #366AF3;
   border-radius: 50%;
   display: flex;
@@ -38,7 +38,6 @@
 }
 
 .bgi-item--selected .bgi-circle {
-  border: 2px solid #FC7630;
   box-shadow: 
     0 0 0 2px rgba(252, 118, 48, 0.3),
     0 4px 16px rgba(252, 118, 48, 0.2);
@@ -53,8 +52,8 @@
 }
 
 .bgi-icon {
-  width: 30px;
-  height: 30px;
+  width: 37px;
+  height: 37px;
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
@@ -95,9 +94,23 @@
 
 .bgi-description {
   font-size: 13px;
-  color: #666;
-  line-height: 1.4;
   margin: 0;
+}
+
+.bgi-effect {
+  position: relative;
+  padding-left: 17px;
+  margin: 3px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.bgi-effect::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #366AF3;
+  font-weight: 900;
 }
 
 @keyframes pulseGlow {

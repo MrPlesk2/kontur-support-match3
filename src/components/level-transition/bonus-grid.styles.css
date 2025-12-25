@@ -1,7 +1,6 @@
 .bg-grid {
   display: flex;
-  flex-direction: column; /* вертикальное расположение */
-  gap: 16px;
-  padding: 8px 0;
+  flex-direction: column;
+  padding: 5px 0 8px;
   width: 100%;
 }
