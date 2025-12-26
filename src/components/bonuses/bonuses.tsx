@@ -18,6 +18,7 @@ export const Bonuses = ({ bonuses, activeBonus, onUseBonus }: BonusesProps) => {
             bonus={bonus}
             activeBonus={activeBonus}
             onUse={onUseBonus}
+            index={index}
           />
         ))}
       </div>

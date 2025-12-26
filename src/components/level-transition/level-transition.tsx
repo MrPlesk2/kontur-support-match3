@@ -32,6 +32,7 @@ export const LevelTransition = ({
         <PromotionHeader
           nextLevelName={nextLevelName}
           levelDescription={LEVELS[currentLevel].description}
+          isFirstLevel={currentLevel===0}
         />
         <BonusSelectionCard
           availableBonuses={availableBonuses}
