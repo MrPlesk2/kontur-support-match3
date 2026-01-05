@@ -372,7 +372,7 @@ export const useMatchProcessing = ({
         }
 
         // PROCESS DIAMONDS
-        let diamondsToRemove: Position[] = [];
+        const diamondsToRemove: Position[] = [];
         for (let col = 0; col < boardToProcess[0].length; col++) {
           if (boardToProcess[BOARD_ROWS - 1]?.[col] === "diamond") {
             diamondsToRemove.push({ row: BOARD_ROWS - 1, col });
@@ -429,7 +429,7 @@ export const useMatchProcessing = ({
         }
 
         // PROCESS STARS
-        let starsToRemove: Position[] = [];
+        const starsToRemove: Position[] = [];
         for (let col = 0; col < boardToProcess[0].length; col++) {
           if (boardToProcess[BOARD_ROWS - 1]?.[col] === "star") {
             starsToRemove.push({ row: BOARD_ROWS - 1, col });
@@ -574,7 +574,7 @@ export const useMatchProcessing = ({
         // Теперь добавляем бонусы, если есть место
         if (bonusesFromCompletedGoals.length > 0) {
           setBonuses((prevBonuses) => {
-            let updatedBonuses = [...prevBonuses];
+            const updatedBonuses = [...prevBonuses];
             
             for (const bonusType of bonusesFromCompletedGoals) {
               const existingIndex = updatedBonuses.findIndex(b => b.type === bonusType);
@@ -631,7 +631,7 @@ const checkPossibleMoves = (board: Board): boolean => {
 
   const canSwapFigure = (figure: string | null): boolean => {
     if (!figure) return false;
-    if (UNMOVABLE_FIGURES.includes(figure as any)) return false;
+    if (UNMOVABLE_FIGURES.includes(figure)) return false;
     return true;
   };
 
