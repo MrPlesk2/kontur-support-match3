@@ -293,7 +293,7 @@ export const useBonuses = ({
               // Добавляем бонусы (если есть место)
               if (newBonuses.length > 0) {
                 setBonuses((prevBonuses) => {
-                  let updatedBonuses = [...prevBonuses];
+                  const updatedBonuses = [...prevBonuses];
                   
                   for (const bonusType of newBonuses) {
                     const existingIndex = updatedBonuses.findIndex(b => b.type === bonusType);

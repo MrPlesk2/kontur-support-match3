@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Position, Bonus, Board, LevelState, ActiveBonus, Match, Figure, SpecialCell } from "types";
-import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
+import { BONUS_EFFECTS, BonusEffect } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, applyHorizontalGravity } from "@utils/game-logic";
 import { ANIMATION_DURATION, BOARD_ROWS, LEVELS } from "consts";
 import { progressTeamHappyOne, progressTeamHappyTwo, progressTeamHappyThree } from "@utils/game-team-utils";
@@ -63,10 +63,11 @@ export const useInputHandlers = ({
   setSpecialCells,
 }: UseInputHandlersProps) => {
   const [modernProductsSourcePos, setModernProductsSourcePos] = useState<Position | null>(null);
+  const [, setOpenGuideCompleted] = useState<number[]>([]);
 
   // Функция для обработки алмазов и звезд в нижнем ряду
   const processSpecialFigures = (currentBoard: Board): { board: Board; hasSpecialFigures: boolean } => {
-    let boardCopy = currentBoard.map(row => [...row]);
+    const boardCopy = currentBoard.map(row => [...row]);
     let hasSpecialFigures = false;
 
     // Проверяем и удаляем алмазы в нижнем ряду
@@ -279,7 +280,7 @@ export const useInputHandlers = ({
         }
       }
 
-      let updatedBoardIsChanged = applyHorizontalGravity(updatedBoard);
+      const updatedBoardIsChanged = applyHorizontalGravity(updatedBoard);
       
       if (updatedBoardIsChanged.isChanged) {
         setBoard([...updatedBoardIsChanged.board]);
