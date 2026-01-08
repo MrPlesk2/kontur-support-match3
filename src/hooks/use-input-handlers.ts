@@ -416,11 +416,14 @@ export const useInputHandlers = ({
       const effect = BONUS_EFFECTS[activeBonus.type];
       if (effect?.applyAt) {
         if (activeBonus.type === "remoteWork") {
+          console.log("это remote work бибиби бабаба");
           const result = effect.applyAt(board, position, undefined, specialCells);
           if (!result || !result.board || result.matchedPositions.length === 0) {
             setActiveBonus(null);
             return;
           }
+          console.log("Внимание говно");
+          console.log(specialCells);
           await applyAndFinalizeBonus(
             activeBonus.type, 
             result.board, 
@@ -433,11 +436,13 @@ export const useInputHandlers = ({
         }
 
         if (activeBonus.type === "itSphere") {
+          console.log("это it sphere бабаба бобобо");
           const result = effect.applyAt(board, position, undefined, specialCells);
           if (!result || !result.board || result.matchedPositions.length === 0) {
             setActiveBonus(null);
             return;
           }
+          console.log(specialCells);
           await applyAndFinalizeBonus(
             activeBonus.type, 
             result.board, 
