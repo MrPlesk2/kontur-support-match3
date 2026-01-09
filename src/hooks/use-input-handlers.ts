@@ -38,7 +38,7 @@ type UseInputHandlersProps = {
   setMoves: (updater: (moves: number) => number) => void;
   setGoals: (updater: (goals: import("types").Goal[]) => import("types").Goal[]) => void;
   setMatches: (matches: Match[]) => void;
-  processMatches?: (board: Board) => Promise<Board>;
+  processMatches?: (board: Board, specialCells: SpecialCell[], options?: { skipGoldenRestore: boolean }) => Promise<Board>;
   specialCells?: SpecialCell[];
   setSpecialCells?: (cells: SpecialCell[]) => void;
 };
@@ -116,22 +116,21 @@ export const useInputHandlers = ({
     return { board: boardCopy, hasSpecialFigures };
   };
 
-  const updateGoalsForRemovedFigures = (
+  const updateGoalsAndSpecialCells = (
     removedFigures: Array<{position: Position, figure: Figure}>,
     removedGoldenCells: Position[]
-  ) => {
-    console.log('=== updateGoalsForRemovedFigures START ===');
+  ): SpecialCell[] => {
+    console.log('=== updateGoalsAndSpecialCells START ===');
     console.log('removedFigures:', removedFigures);
     console.log('removedGoldenCells:', removedGoldenCells);
     console.log('current specialCells:', specialCells);
     
+    // Создаем копию specialCells для обновления
+    let updatedSpecialCells = specialCells ? [...specialCells] : [];
+    
     // Обрабатываем golden-cell
     if (removedGoldenCells.length > 0) {
       console.log(`Processing ${removedGoldenCells.length} golden cells`);
-      
-      // Создаем копию specialCells для обновления
-      let updatedSpecialCells = specialCells ? [...specialCells] : [];
-      let goldenCellsUpdated = false;
       
       removedGoldenCells.forEach(pos => {
         const cellIndex = updatedSpecialCells.findIndex(cell => 
@@ -140,13 +139,12 @@ export const useInputHandlers = ({
           cell.type === 'golden'
         );
         
-        if (cellIndex !== -1 && updatedSpecialCells[cellIndex].isActive !== false) {
+        if (cellIndex !== -1) {
           console.log(`Marking golden cell as inactive at ${pos.row},${pos.col}`);
           updatedSpecialCells[cellIndex] = {
             ...updatedSpecialCells[cellIndex],
             isActive: false,
           };
-          goldenCellsUpdated = true;
         }
       });
       
@@ -169,7 +167,7 @@ export const useInputHandlers = ({
       });
       
       // Применяем обновленные specialCells
-      if (goldenCellsUpdated && setSpecialCells) {
+      if (setSpecialCells) {
         console.log('Updating specialCells:', updatedSpecialCells);
         setSpecialCells(updatedSpecialCells);
       }
@@ -206,7 +204,9 @@ export const useInputHandlers = ({
       });
     }
     
-    console.log('=== updateGoalsForRemovedFigures END ===');
+    console.log('=== updateGoalsAndSpecialCells END ===');
+    
+    return updatedSpecialCells;
   };
 
   const applyAndFinalizeBonus = async (
@@ -253,10 +253,8 @@ export const useInputHandlers = ({
       return next;
     });
 
-    // Обновляем цели для удаленных фигур и golden-cell
-    if (type === "itSphere" || type === "remoteWork") {
-      updateGoalsForRemovedFigures(removedFigures, removedGoldenCells);
-    }
+    // Обновляем цели и specialCells для удаленных фигур и golden-cell
+    const updatedSpecialCells = updateGoalsAndSpecialCells(removedFigures, removedGoldenCells);
 
     effect?.onApply?.(setMoves);
     effect?.onApplyGoals?.(setGoals);
@@ -341,7 +339,9 @@ export const useInputHandlers = ({
       await new Promise(resolve => setTimeout(resolve, 200));
 
       if (processMatches) {
-        await processMatches(updatedBoard);
+        // Для бонусов itSphere и remoteWork передаем обновленные specialCells и флаг skipGoldenRestore
+        const skipGoldenRestore = (type === "itSphere" || type === "remoteWork");
+        await processMatches(updatedBoard, updatedSpecialCells, { skipGoldenRestore });
       }
     } finally {
       setIsAnimating(false);

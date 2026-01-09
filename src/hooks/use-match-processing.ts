@@ -90,13 +90,16 @@ export const useMatchProcessing = ({
   }, []);
 
   const processMatches = useCallback(
-    async (currentBoard: Board): Promise<Board> => {
+    async (currentBoard: Board, currentSpecialCells: SpecialCell[] = [], options?: { skipGoldenRestore: boolean }): Promise<Board> => {
+      const skipGoldenRestore = options?.skipGoldenRestore || false;
+      
       let boardToProcess = currentBoard;
       let hasMatches = true;
       let totalRoundScore = 0;
       let usedModifiers = false;
 
-      const initialSpecialCells = currentLevel?.specialCells || [];
+      // ВАЖНО: используем переданные currentSpecialCells, которые уже обновлены бонусами
+      const initialSpecialCells = currentSpecialCells;
       const updatedSpecialCells: SpecialCell[] = [...initialSpecialCells];
 
       // Переменные для отслеживания выполненных целей и бонусов за этот ход
@@ -121,12 +124,12 @@ export const useMatchProcessing = ({
                 (cell) =>
                   cell.row === pos.row &&
                   cell.col === pos.col &&
+                  cell.type === "golden" &&
                   cell.isActive !== false
               );
 
               if (specialCellIndex !== -1) {
                 const sc = updatedSpecialCells[specialCellIndex];
-
                 if (sc.type === "golden") {
                   updatedSpecialCells[specialCellIndex] = {
                     ...sc,
@@ -134,11 +137,20 @@ export const useMatchProcessing = ({
                   };
                   collectedGolden++;
                 }
+              }
 
-                if (sc.type === "team") {
-                  teamFoundInThisMatch = true;
-                  teamPositionsInThisRound.push({ row: pos.row, col: pos.col });
-                }
+              // Проверяем team cells
+              const teamCellIndex = updatedSpecialCells.findIndex(
+                (cell) =>
+                  cell.row === pos.row &&
+                  cell.col === pos.col &&
+                  cell.type === "team" &&
+                  cell.isActive !== false
+              );
+
+              if (teamCellIndex !== -1) {
+                teamFoundInThisMatch = true;
+                teamPositionsInThisRound.push({ row: pos.row, col: pos.col });
               }
             });
 
@@ -358,7 +370,7 @@ export const useMatchProcessing = ({
             }
           }
 
-          // Восстанавливаем team cells
+          // Восстанавливаем team cells, но НЕ восстанавливаем golden cells если skipGoldenRestore=true
           updatedSpecialCells.forEach((sc) => {
             if (sc.type === "team" && sc.isActive !== false) {
               if (
@@ -366,6 +378,16 @@ export const useMatchProcessing = ({
                 boardToProcess[sc.row][sc.col] === null
               ) {
                 boardToProcess[sc.row][sc.col] = "teamCell";
+              }
+            }
+            
+            // Восстанавливаем golden cells только если не пропущено
+            if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
+              if (
+                boardToProcess[sc.row] &&
+                boardToProcess[sc.row][sc.col] === null
+              ) {
+                boardToProcess[sc.row][sc.col] = "goldenCell";
               }
             }
           });
@@ -419,6 +441,7 @@ export const useMatchProcessing = ({
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
+          // Восстанавливаем team cells, но НЕ восстанавливаем golden cells если skipGoldenRestore=true
           updatedSpecialCells.forEach((sc) => {
             if (sc.type === "team" && sc.isActive !== false) {
               if (boardToProcess[sc.row]) {
@@ -426,7 +449,16 @@ export const useMatchProcessing = ({
                   boardToProcess[sc.row][sc.col] ?? "teamCell";
               }
             }
+            
+            // Восстанавливаем golden cells только если не пропущено
+            if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
+              if (boardToProcess[sc.row]) {
+                boardToProcess[sc.row][sc.col] =
+                  boardToProcess[sc.row][sc.col] ?? "goldenCell";
+              }
+            }
           });
+          
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
@@ -476,6 +508,7 @@ export const useMatchProcessing = ({
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
+          // Восстанавливаем team cells, но НЕ восстанавливаем golden cells если skipGoldenRestore=true
           updatedSpecialCells.forEach((sc) => {
             if (sc.type === "team" && sc.isActive !== false) {
               if (boardToProcess[sc.row]) {
@@ -483,7 +516,16 @@ export const useMatchProcessing = ({
                   boardToProcess[sc.row][sc.col] ?? "teamCell";
               }
             }
+            
+            // Восстанавливаем golden cells только если не пропущено
+            if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
+              if (boardToProcess[sc.row]) {
+                boardToProcess[sc.row][sc.col] =
+                  boardToProcess[sc.row][sc.col] ?? "goldenCell";
+              }
+            }
           });
+          
           setBoard([...boardToProcess]);
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
         }
