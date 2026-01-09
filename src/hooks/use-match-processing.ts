@@ -99,7 +99,7 @@ export const useMatchProcessing = ({
       let usedModifiers = false;
 
       // ВАЖНО: используем переданные currentSpecialCells, которые уже обновлены бонусами
-      const initialSpecialCells = currentSpecialCells;
+      const initialSpecialCells = currentSpecialCells.length > 0 ? currentSpecialCells : currentLevel?.specialCells || [];
       const updatedSpecialCells: SpecialCell[] = [...initialSpecialCells];
 
       // Переменные для отслеживания выполненных целей и бонусов за этот ход
@@ -120,7 +120,8 @@ export const useMatchProcessing = ({
             let teamFoundInThisMatch = false;
 
             match.positions.forEach((pos) => {
-              const specialCellIndex = updatedSpecialCells.findIndex(
+              // Ищем golden cells среди специальных клеток
+              const goldenCellIndex = updatedSpecialCells.findIndex(
                 (cell) =>
                   cell.row === pos.row &&
                   cell.col === pos.col &&
@@ -128,27 +129,22 @@ export const useMatchProcessing = ({
                   cell.isActive !== false
               );
 
-              if (specialCellIndex !== -1) {
-                const sc = updatedSpecialCells[specialCellIndex];
+              if (goldenCellIndex !== -1) {
+                const sc = updatedSpecialCells[goldenCellIndex];
                 if (sc.type === "golden") {
-                  updatedSpecialCells[specialCellIndex] = {
+                  // Помечаем golden cell как неактивную
+                  updatedSpecialCells[goldenCellIndex] = {
                     ...sc,
                     isActive: false,
                   };
                   collectedGolden++;
+                  console.log(`Found and collected golden cell at ${pos.row},${pos.col} in matches`);
                 }
               }
 
-              // Проверяем team cells
-              const teamCellIndex = updatedSpecialCells.findIndex(
-                (cell) =>
-                  cell.row === pos.row &&
-                  cell.col === pos.col &&
-                  cell.type === "team" &&
-                  cell.isActive !== false
-              );
-
-              if (teamCellIndex !== -1) {
+              // Проверяем team cells (они не в specialCells, а на поле как фигуры)
+              const cellFigure = boardToProcess[pos.row][pos.col];
+              if (cellFigure === "teamCell") {
                 teamFoundInThisMatch = true;
                 teamPositionsInThisRound.push({ row: pos.row, col: pos.col });
               }
@@ -169,11 +165,11 @@ export const useMatchProcessing = ({
             }
           });
 
-          if (onSpecialCellsUpdate && updatedSpecialCells.length > 0) {
+          if (onSpecialCellsUpdate) {
             onSpecialCellsUpdate(updatedSpecialCells);
           }
 
-          // UPDATE GOALS FOR GOLDEN
+          // UPDATE GOALS FOR GOLDEN - ЗДЕСЬ ИСПРАВЛЕНИЕ!
           if (collectedGolden > 0) {
             setGoals((prev) => {
               const next = [...prev];
@@ -182,6 +178,7 @@ export const useMatchProcessing = ({
                 const inc = modifiers.doubleGoalProgress
                   ? collectedGolden * 2
                   : collectedGolden;
+                console.log(`Adding ${inc} to goldenCell goal in processMatches`);
                 next[idx] = {
                   ...next[idx],
                   collected: Math.min(
@@ -207,6 +204,7 @@ export const useMatchProcessing = ({
                   next[idx].collected + inc,
                   next[idx].target
                 );
+                console.log(`Adding ${inc} to teamCell goal in processMatches`);
                 next[idx] = {
                   ...next[idx],
                   collected: newCollected,
@@ -381,7 +379,7 @@ export const useMatchProcessing = ({
               }
             }
             
-            // Восстанавливаем golden cells только если не пропущено
+            // Восстанавливаем golden cells только если не пропущено (для обычных matches)
             if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
               if (
                 boardToProcess[sc.row] &&
@@ -450,7 +448,7 @@ export const useMatchProcessing = ({
               }
             }
             
-            // Восстанавливаем golden cells только если не пропущено
+            // Восстанавливаем golden cells только если не пропущено (для обычных matches)
             if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
               if (boardToProcess[sc.row]) {
                 boardToProcess[sc.row][sc.col] =
@@ -517,7 +515,7 @@ export const useMatchProcessing = ({
               }
             }
             
-            // Восстанавливаем golden cells только если не пропущено
+            // Восстанавливаем golden cells только если не пропущено (для обычных matches)
             if (!skipGoldenRestore && sc.type === "golden" && sc.isActive !== false) {
               if (boardToProcess[sc.row]) {
                 boardToProcess[sc.row][sc.col] =

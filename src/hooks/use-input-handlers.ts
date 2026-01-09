@@ -26,7 +26,8 @@ type UseInputHandlersProps = {
     pos1: Position,
     pos2: Position,
     moves: number,
-    setMoves: (updater: (moves: number) => number) => void
+    setMoves: (updater: (moves: number) => number) => void,
+    specialCells: SpecialCell[]
   ) => Promise<boolean>;
   handleBonus: (type: Bonus["type"], board: Board) => void;
   board: Board;
@@ -464,7 +465,8 @@ export const useInputHandlers = ({
           gameState.selectedPosition,
           position,
           gameState.moves,
-          gameState.setMoves
+          gameState.setMoves,
+          specialCells
         );
       }
       gameState.setSelectedPosition(null);
@@ -508,7 +510,8 @@ export const useInputHandlers = ({
         gameState.selectedPosition,
         position,
         gameState.moves,
-        gameState.setMoves
+        gameState.setMoves,
+        specialCells
       );
       gameState.setSelectedPosition(null);
     }

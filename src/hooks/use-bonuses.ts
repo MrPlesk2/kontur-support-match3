@@ -67,47 +67,6 @@ export const useBonuses = ({
     return filteredFigures[Math.floor(Math.random() * filteredFigures.length)];
   }, []);
 
-  const updateSpecialCellsAfterBonus = useCallback((
-    removedGoldenCells: Position[]
-  ): SpecialCell[] => {
-    console.log('=== updateSpecialCellsAfterBonus (useBonuses) START ===');
-    console.log('removedGoldenCells:', removedGoldenCells);
-    console.log('current specialCells:', specialCells);
-    
-    if (removedGoldenCells.length === 0) {
-      return specialCells || [];
-    }
-    
-    // Создаем копию specialCells для обновления
-    let updatedSpecialCells = specialCells ? [...specialCells] : [];
-    
-    removedGoldenCells.forEach(pos => {
-      const cellIndex = updatedSpecialCells.findIndex(cell => 
-        cell.row === pos.row && 
-        cell.col === pos.col && 
-        cell.type === 'golden'
-      );
-      
-      if (cellIndex !== -1) {
-        console.log(`Marking golden cell as inactive at ${pos.row},${pos.col} (useBonuses)`);
-        updatedSpecialCells[cellIndex] = {
-          ...updatedSpecialCells[cellIndex],
-          isActive: false,
-        };
-      }
-    });
-    
-    // Применяем обновленные specialCells
-    if (setSpecialCells) {
-      console.log('Updating specialCells (useBonuses):', updatedSpecialCells);
-      setSpecialCells(updatedSpecialCells);
-    }
-    
-    console.log('=== updateSpecialCellsAfterBonus (useBonuses) END ===');
-    
-    return updatedSpecialCells;
-  }, [specialCells, setSpecialCells]);
-
   const updateGoalsForRemovedFigures = useCallback((
     removedFigures: Array<{position: Position, figure: Figure}>,
     removedGoldenCells: Position[]
@@ -115,9 +74,34 @@ export const useBonuses = ({
     console.log('=== updateGoalsForRemovedFigures (useBonuses) START ===');
     console.log('removedFigures:', removedFigures);
     console.log('removedGoldenCells:', removedGoldenCells);
+    console.log('current specialCells:', specialCells);
     
-    // Обновляем цели для golden-cell
+    // Обрабатываем golden-cell
     if (removedGoldenCells.length > 0) {
+      console.log(`Processing ${removedGoldenCells.length} golden cells (useBonuses)`);
+      
+      // Создаем копию specialCells для обновления
+      let updatedSpecialCells = specialCells ? [...specialCells] : [];
+      let goldenCellsUpdated = false;
+      
+      removedGoldenCells.forEach(pos => {
+        const cellIndex = updatedSpecialCells.findIndex(cell => 
+          cell.row === pos.row && 
+          cell.col === pos.col && 
+          cell.type === 'golden'
+        );
+        
+        if (cellIndex !== -1) {
+          console.log(`Marking golden cell as inactive at ${pos.row},${pos.col} (useBonuses)`);
+          updatedSpecialCells[cellIndex] = {
+            ...updatedSpecialCells[cellIndex],
+            isActive: false,
+          };
+          goldenCellsUpdated = true;
+        }
+      });
+      
+      // Обновляем цели для golden-cell
       setGoals((prev) => {
         const next = prev.map(goal => {
           if (goal.figure === "goldenCell") {
@@ -134,6 +118,12 @@ export const useBonuses = ({
         });
         return next;
       });
+      
+      // Применяем обновленные specialCells
+      if (goldenCellsUpdated && setSpecialCells) {
+        console.log('Updating specialCells (useBonuses):', updatedSpecialCells);
+        setSpecialCells(updatedSpecialCells);
+      }
     }
 
     // Обновляем цели для удаленных фигур
@@ -168,7 +158,7 @@ export const useBonuses = ({
     }
     
     console.log('=== updateGoalsForRemovedFigures (useBonuses) END ===');
-  }, [setGoals]);
+  }, [setGoals, setSpecialCells, specialCells]);
 
   const applyBonusBoardUpdate = async (boardWithHoles: Board, bonusType: BonusType) => {
     const bonusChange = [
@@ -242,34 +232,6 @@ export const useBonuses = ({
       // Обновляем цели для удаленных фигур и golden-cell
       if ((type === "itSphere" || type === "remoteWork") && result.removedFigures && result.removedGoldenCells) {
         updateGoalsForRemovedFigures(result.removedFigures, result.removedGoldenCells);
-        
-        // Обновляем specialCells и получаем обновленный массив
-        const updatedSpecialCells = updateSpecialCellsAfterBonus(result.removedGoldenCells);
-        
-        if (findAllMatches(result.board).length > 0 && processMatches) {
-          // Для бонусов itSphere и remoteWork передаем обновленные specialCells
-          const skipGoldenRestore = (type === "itSphere" || type === "remoteWork");
-          applyBonusBoardUpdate(result.board, type).then(async (finalBoard) => {
-            effect.onApply?.(setMoves);
-            effect.onApplyGoals?.(setGoals);
-
-            await processMatches(finalBoard, updatedSpecialCells, { skipGoldenRestore });
-
-            setTimeout(() => {
-              setIsAnimating(false);
-            }, 300);
-          });
-        } else {
-          applyBonusBoardUpdate(result.board, type).then(async () => {
-            effect.onApply?.(setMoves);
-            effect.onApplyGoals?.(setGoals);
-
-            setTimeout(() => {
-              setIsAnimating(false);
-            }, 300);
-          });
-        }
-        return;
       }
       
       if (type === "openGuide" && currentLevelId === 5) {
@@ -393,7 +355,6 @@ export const useBonuses = ({
       specialCells,
       setSpecialCells,
       updateGoalsForRemovedFigures,
-      updateSpecialCellsAfterBonus,
     ]
   );
 
