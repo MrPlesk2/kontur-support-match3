@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Bonus, Board, ActiveBonus, GameModifiers, Goal, BonusType, Figure, Position, SpecialCell } from "types";
+import { Bonus, Board, ActiveBonus, GameModifiers, Goal, BonusType, Figure, Position, SpecialCell, Level } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import {
   applyGravity,
@@ -47,8 +47,8 @@ export const useBonuses = ({
       "remoteWork",
       "openGuide",
       "modernProducts",
-      "itSphere",
-      "dms"
+      //"itSphere",
+      "dms",
     ];
     return allBonuses[Math.floor(Math.random() * allBonuses.length)];
   }, []);
@@ -66,6 +66,74 @@ export const useBonuses = ({
     
     return filteredFigures[Math.floor(Math.random() * filteredFigures.length)];
   }, []);
+
+  // Функция для замены выполненных целей на 6-м уровне
+  const replaceCompletedGoalsForLevel6 = useCallback((prevGoals: Goal[]): [Goal[], BonusType[]] => {
+    if (currentLevelId !== 6) return [prevGoals, []];
+    
+    const updatedGoals = [...prevGoals];
+    const completedIndices: number[] = [];
+    const newBonuses: BonusType[] = [];
+    
+    // Находим выполненные цели
+    updatedGoals.forEach((goal, index) => {
+      if (goal.collected >= goal.target) {
+        completedIndices.push(index);
+        const randomBonus = getRandomBonusForLevel6();
+        newBonuses.push(randomBonus);
+      }
+    });
+
+    // Если есть выполненные цели - заменяем их
+    if (completedIndices.length > 0) {
+      console.log(`Заменяем ${completedIndices.length} выполненных целей на 6-м уровне`);
+      
+      completedIndices.forEach((index) => {
+        const currentFigures = updatedGoals.map(g => g.figure);
+        const newFigure = getRandomFigureForLevel6(LEVELS[5].availableFigures || [], currentFigures);
+        const newTarget = updatedGoals[index].target + 1;
+        updatedGoals[index] = {
+          figure: newFigure,
+          target: newTarget,
+          collected: 0
+        };
+      });
+
+      // Добавляем бонусы
+      if (newBonuses.length > 0) {
+        console.log(`Добавляем бонусы за выполненные цели:`, newBonuses);
+        setBonuses((prevBonuses) => {
+          let updatedBonuses = [...prevBonuses];
+          
+          for (const bonusType of newBonuses) {
+            const existingIndex = updatedBonuses.findIndex(b => b.type === bonusType);
+            
+            if (existingIndex !== -1) {
+              updatedBonuses[existingIndex] = {
+                ...updatedBonuses[existingIndex],
+                count: Math.min(updatedBonuses[existingIndex].count + 1, 3)
+              };
+            } else if (updatedBonuses.length < 2) {
+              updatedBonuses.push({ type: bonusType, count: 1 });
+            } else {
+              // Если уже есть 2 бонуса, добавляем к случайному существующему
+              const randomIndex = Math.floor(Math.random() * 2);
+              if (updatedBonuses[randomIndex].count < 3) {
+                updatedBonuses[randomIndex] = {
+                  ...updatedBonuses[randomIndex],
+                  count: Math.min(updatedBonuses[randomIndex].count + 1, 3)
+                };
+              }
+            }
+          }
+          
+          return updatedBonuses;
+        });
+      }
+    }
+    
+    return [updatedGoals, newBonuses];
+  }, [currentLevelId, setBonuses, getRandomBonusForLevel6, getRandomFigureForLevel6]);
 
   const updateGoalsForRemovedFigures = useCallback((
     removedFigures: Array<{position: Position, figure: Figure}>,
@@ -119,6 +187,13 @@ export const useBonuses = ({
           }
           return goal;
         });
+        
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Немедленно проверяем и заменяем выполненные цели на 6-м уровне
+        if (currentLevelId === 6) {
+          const [newGoals, bonusesToAdd] = replaceCompletedGoalsForLevel6(next);
+          return newGoals;
+        }
+        
         return next;
       });
       
@@ -160,12 +235,18 @@ export const useBonuses = ({
           return goal;
         });
 
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Немедленно проверяем и заменяем выполненные цели на 6-м уровне
+        if (currentLevelId === 6) {
+          const [newGoals, bonusesToAdd] = replaceCompletedGoalsForLevel6(next);
+          return newGoals;
+        }
+
         return next;
       });
     }
     
     console.log('=== updateGoalsForRemovedFigures (useBonuses) END ===');
-  }, [setGoals, setSpecialCells, specialCells, setBoard]);
+  }, [setGoals, setSpecialCells, specialCells, currentLevelId, replaceCompletedGoalsForLevel6]);
 
   const applyBonusBoardUpdate = async (boardWithHoles: Board, bonusType: BonusType) => {
     const bonusChange = [
@@ -197,6 +278,9 @@ export const useBonuses = ({
     (type: Bonus["type"], currentBoard: Board) => {
       const effect = BONUS_EFFECTS[type];
       if (!effect) return;
+
+      // Получаем текущий уровень для friendlyTeam
+      const currentLevel = currentLevelId ? LEVELS[currentLevelId - 1] : undefined;
 
       setBonuses((prev) => {
         const idx = prev.findIndex((b) => b.type === type);
@@ -233,7 +317,7 @@ export const useBonuses = ({
 
       setIsAnimating(true);
 
-      const result = effect.apply(currentBoard, specialCells);
+      const result = effect.apply(currentBoard, specialCells, currentLevel);
       console.log('Bonus applied:', type, result);
       
       // Для itSphere и remoteWork передаем bonusType, чтобы не учитывать teamCell
@@ -279,55 +363,12 @@ export const useBonuses = ({
       if (type === "openGuide" && currentLevelId === 6) {
         effect.onApplyGoals?.(setGoals);
         
+        // Для openGuide на 6-м уровне ждем немного перед заменой целей
         setTimeout(() => {
+          // Проверяем и заменяем выполненные цели
           setGoals((prevGoals) => {
-            const updatedGoals = [...prevGoals];
-            const completedIndices: number[] = [];
-            const newBonuses: BonusType[] = [];
-            
-            updatedGoals.forEach((goal, index) => {
-              if (goal.collected >= goal.target) {
-                completedIndices.push(index);
-                const randomBonus = getRandomBonusForLevel6();
-                newBonuses.push(randomBonus);
-              }
-            });
-
-            if (completedIndices.length > 0) {
-              completedIndices.forEach((index) => {
-                const currentFigures = updatedGoals.map(g => g.figure);
-                const newFigure = getRandomFigureForLevel6(LEVELS[5].availableFigures || [], currentFigures);
-                const newTarget = updatedGoals[index].target + 1;
-                updatedGoals[index] = {
-                  figure: newFigure,
-                  target: newTarget,
-                  collected: 0
-                };
-              });
-
-              if (newBonuses.length > 0) {
-                setBonuses((prevBonuses) => {
-                  let updatedBonuses = [...prevBonuses];
-                  
-                  for (const bonusType of newBonuses) {
-                    const existingIndex = updatedBonuses.findIndex(b => b.type === bonusType);
-                    
-                    if (existingIndex !== -1) {
-                      updatedBonuses[existingIndex] = {
-                        ...updatedBonuses[existingIndex],
-                        count: Math.min(updatedBonuses[existingIndex].count + 1, 3)
-                      };
-                    } else if (updatedBonuses.length < 2) {
-                      updatedBonuses.push({ type: bonusType, count: 1 });
-                    }
-                  }
-                  
-                  return updatedBonuses;
-                });
-              }
-            }
-            
-            return updatedGoals;
+            const [newGoals, bonusesToAdd] = replaceCompletedGoalsForLevel6(prevGoals);
+            return newGoals;
           });
 
           applyBonusBoardUpdate(result.board, type).then(async (finalBoard) => {
@@ -343,9 +384,21 @@ export const useBonuses = ({
           });
         }, 100);
       } else {
+        // Для ВСЕХ бонусов на 6-м уровне
         applyBonusBoardUpdate(result.board, type).then(async (finalBoard) => {
           effect.onApply?.(setMoves);
           effect.onApplyGoals?.(setGoals);
+
+          // Для 6-го уровня заменяем выполненные цели для ВСЕХ бонусов
+          // (кроме openGuide, который уже обработан выше)
+          if (currentLevelId === 6 && type !== "openGuide") {
+            setTimeout(() => {
+              setGoals((prevGoals) => {
+                const [newGoals, bonusesToAdd] = replaceCompletedGoalsForLevel6(prevGoals);
+                return newGoals;
+              });
+            }, 50);
+          }
 
           if (findAllMatches(finalBoard).length > 0 && processMatches) {
             const skipGoldenRestore = (type === "itSphere" || type === "remoteWork");
@@ -374,6 +427,7 @@ export const useBonuses = ({
       specialCells,
       setSpecialCells,
       updateGoalsForRemovedFigures,
+      replaceCompletedGoalsForLevel6,
     ]
   );
 

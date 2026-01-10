@@ -149,7 +149,7 @@ export const LEVELS: Level[] = [
       { figure: "heart", target: 8, collected: 0 },
       { figure: "handshake", target: 8, collected: 0 },
     ],
-    bonuses: ["friendlyTeam", "sportCompensation", "knowledgeBase"],
+    bonuses: ["friendlyTeam", "itSphere", "knowledgeBase"],
     moves: 25,
     availableFigures: [
       "question",

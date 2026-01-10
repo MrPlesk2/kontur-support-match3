@@ -20,7 +20,7 @@ import { applyItSphereEffect, applyItSphereAt } from "./it-sphere";
 import { applyDMSEffect } from "./dms"
 
 export type BonusEffect = {
-  apply: (board: Board, level?: Level, specialCells?: SpecialCell[]) => { 
+  apply: (board: Board, specialCells?: SpecialCell[], currentLevel?: Level) => { 
     board: Board, 
     matchedPositions: Position[],
     removedFigures?: Array<{position: Position, figure: Figure}>,
@@ -45,8 +45,8 @@ export type BonusEffect = {
 
 export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   friendlyTeam: {
-    apply: (board, level) => ({ 
-      board: applyFriendlyTeamEffect(board, level), 
+    apply: (board, specialCells, currentLevel) => ({ 
+      board: applyFriendlyTeamEffect(board, currentLevel), 
       matchedPositions: [],
       removedFigures: [],
       removedGoldenCells: []
@@ -55,7 +55,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   careerGrowth: {
-    apply: (board) => ({ 
+    apply: (board, specialCells, currentLevel) => ({ 
       board, 
       matchedPositions: [],
       removedFigures: [],
@@ -67,7 +67,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   sportCompensation: {
-    apply: (board) => ({ 
+    apply: (board, specialCells, currentLevel) => ({ 
       board: applySportCompensationEffect(board), 
       matchedPositions: [],
       removedFigures: [],
@@ -78,7 +78,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   knowledgeBase: {
-    apply: (board) => ({ 
+    apply: (board, specialCells, currentLevel) => ({ 
       board: applyKnowledgeBaseEffect(board), 
       matchedPositions: [],
       removedFigures: [],
@@ -95,7 +95,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   openGuide: {
-    apply: (board) => ({ 
+    apply: (board, specialCells, currentLevel) => ({ 
       board, 
       matchedPositions: [],
       removedFigures: [],
@@ -118,7 +118,7 @@ export const BONUS_EFFECTS: Record<BonusType, BonusEffect> = {
   },
 
   dms: {
-    apply: (board) => ({ 
+    apply: (board, specialCells, currentLevel) => ({ 
       board: applyDMSEffect(board), 
       matchedPositions: [],
       removedFigures: [],
