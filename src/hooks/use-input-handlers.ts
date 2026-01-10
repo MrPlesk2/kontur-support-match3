@@ -3,7 +3,6 @@ import { Position, Bonus, Board, LevelState, ActiveBonus, Match, Figure } from "
 import { BONUS_EFFECTS, BonusEffect } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, applyHorizontalGravity } from "@utils/game-logic";
 import { ANIMATION_DURATION, BOARD_ROWS, LEVELS } from "consts";
-import { progressTeamHappyOne, progressTeamHappyTwo, progressTeamHappyThree } from "@utils/game-team-utils";
 import { applyModernProductsAt } from "@utils/bonus-effects/modern-products";
 
 type GameBoardState = {

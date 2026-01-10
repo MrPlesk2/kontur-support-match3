@@ -22,21 +22,22 @@ export default function GamePage() {
   return (
     <div className="page">
       <div className="game-main">
-        <div className="game-info">
-          <Score score={gameLogic.score} />
-          <div className="level-name" data-text={gameLogic.currentLevel?.name}>
-            {gameLogic.currentLevel?.name}
-          </div>
-          <Moves moves={gameLogic.moves} />
-        </div>
 
         <div className="game-content">
           <div className="left-panel">
-            <Goals goals={gameLogic.goals} />
             <img src="src/assets/logo/logo-kontur.png" alt="Logo Kontur" className="game-logo" />
+            <Goals goals={gameLogic.goals} />
           </div>
 
           <div className="game-field-section">
+            <div className="game-info">
+              <Score score={gameLogic.score} />
+              <div className="level-name" data-text={gameLogic.currentLevel?.name}>
+                {gameLogic.currentLevel?.name}
+              </div>
+              <Moves moves={gameLogic.moves} />
+            </div>
+
             <GameField
               board={gameLogic.board}
               selectedPosition={gameLogic.selectedPosition}

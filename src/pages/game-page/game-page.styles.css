@@ -1,9 +1,14 @@
 .page {
-  padding: 40px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
+  justify-content: center; /* центрирует по вертикали */
+  min-height: 100vh; /* занимает всю высоту экрана */
+  margin: 0 auto; /* центрирует по горизонтали если есть max-width */
+  max-width: 1200px; /* опционально: ограничить максимальную ширину */
+  width: 100%;
+  padding: 20px; /* равные отступы со всех сторон */
+  box-sizing: border-box;
 }
 
 .game-main {
@@ -14,12 +19,11 @@
 
 .game-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 440px; 
-  margin: 0 0 20px 160px;
-  padding: 0;
-  box-sizing: border-box;
+  justify-content: space-between; /* первый у левого края, последний у правого */
+  width: 100%; /* занимает всю ширину */
+  max-width: 446px; /* ограничение ширины */
+  margin: 0 auto; /* центрирование если родитель шире */
 }
 
 .game-content {
@@ -33,6 +37,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 20px;
 }
 
 .level-name {
@@ -40,17 +45,18 @@
   font-family: 'Inter', sans-serif;
   font-size: 25px;
   color: #FFFFFF;
-  text-shadow: 0px 3px 5px rgba(0, 0, 0, 0.4); 
+  text-shadow: 0px 3px 5px rgba(0, 0, 0, 0.4);
 }
 
 .left-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 55px;
+  gap: 20px;
 }
 
 .game-logo {
   width: 100px;
-  height: auto;
+  object-fit: contain;
+  height: 40px;
 }

@@ -1,27 +1,25 @@
 .bsc-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: #F6F6F6; /* серый фон */
-  border-radius: 20px; /* скругление для серого фона */
-  padding: 15px; /* отступ внутри серого фона */
+  gap: 12px;
+  background: #F6F6F6;
+  border-radius: 20px;
 }
 
 .bsc-white-card {
   background: white;
-  border-radius: 18px; /* скругление для белой карточки */
-  padding: 15px 30px 10px; /* отступ внутри белой карточки */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* легкая тень для карточки */
+  border-radius: 18px;
+  padding: 12px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .bsc-title {
   margin: 0;
-  font-size: 18px;
+  font-size: clamp(16px, 4vw, 18px);
   text-align: center;
-
 }
 
 .bsc-hint {
