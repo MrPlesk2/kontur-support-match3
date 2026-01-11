@@ -3,12 +3,13 @@
   flex-direction: column;
   background-color: #f6f6f6;
   border-radius: 24px;
-  padding: 20px;
   height: 452px;
   width: 140px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
   box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
 }
 
 .goals-title {
@@ -33,10 +34,8 @@
   align-items: center;
   justify-content: center; 
   flex: 1;
-  margin-top: -30px; 
 }
 
-/* Добавим в существующие стили */
 .goal-item--completed .goal-progress {
   color: #00c853;
   font-weight: 700;
@@ -51,4 +50,20 @@
 
 .goal-item--completed {
   animation: pulseGreen 0.6s ease;
+}
+
+
+@media (max-width: 575px) {
+  .goals-list {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  .goals-container {
+    width: 392px;
+    height: 150px;
+  }
+  .goals-title {
+    margin: 0 0 10px 0;
+  }
 }

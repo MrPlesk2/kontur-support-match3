@@ -54,7 +54,7 @@ export const LevelTransition = ({
           onClick={handleStart}
           disabled={selectedBonuses.length !== 2}
         >
-          Продолжить игру
+          { currentLevel === 0 ? 'Начать игру' : 'Продолжить игру' }
         </button>
       </div>
     </div>

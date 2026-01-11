@@ -12,7 +12,7 @@
 .lt-modal {
   background: #F6F6F6;
   border-radius: 24px;
-  padding: clamp(12px, 3vw, 20px);
+  padding: clamp(8px, 3vw, 20px);
   width: min(475px, 95vw);
   max-height: 95vh;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
@@ -24,7 +24,7 @@
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .lt-modal {
-    width: min(600px, 90vw);
+    width: min(740px, 90vw);
   }
 }
 
@@ -61,6 +61,5 @@
 }
 
 @media (max-height: 600px) {
-  .lt-modal { padding: 10px; }
   .lt-start-button { padding: 8px 30px; font-size: 16px; }
 }
