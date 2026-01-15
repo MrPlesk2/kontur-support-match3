@@ -25,26 +25,3 @@ body {
 body {
   background: linear-gradient(135deg, #E0F7FA 0%, #91cbff 50%, #91cbff 100%);
 }
-
-
-
-
-
-html, body, #root, .page {
-  height: 100dvh;
-  min-height: -webkit-fill-available;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: manipulation;
-}
-
-.page {
-  display: flex;
-  flex-direction: column;
-}
-
-.game-main,
-.game-content {
-  flex: 1 1 auto;
-  min-height: 0;
-}
