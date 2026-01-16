@@ -100,6 +100,8 @@ export const useLevelManagement = ({
 
     // If no moves left and there's no animation in progress, restart the current level.
     // We guard with completionTriggered to prevent double triggers.
+    // Если закончились ходы, вызывается вот это
+    // Тут есть рестарт уровня
     if (gameState.moves <= 0 && !isAnimating && !completionTriggered) {
       setCompletionTriggered(true);
 
