@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Position, Bonus, Board, LevelState, ActiveBonus, Match, Figure, SpecialCell } from "types";
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, applyHorizontalGravity } from "@utils/game-logic";
@@ -63,7 +63,6 @@ export const useInputHandlers = ({
   setSpecialCells,
 }: UseInputHandlersProps) => {
   const [modernProductsSourcePos, setModernProductsSourcePos] = useState<Position | null>(null);
-  const [touchStartPosition, setTouchStartPosition] = useState<Position | null>(null);
 
   // Функция для обработки алмазов и звезд в нижнем ряду
   const processSpecialFigures = (currentBoard: Board): { board: Board; hasSpecialFigures: boolean } => {
@@ -363,7 +362,7 @@ export const useInputHandlers = ({
     console.log(`=== applyAndFinalizeBonus для ${type} END ===\n`);
   };
 
-  const handleCellClick = useCallback(async (position: Position) => {
+  const handleCellClick = async (position: Position) => {
     if (
       levelState.isLevelTransition ||
       gameState.isSwapping ||
@@ -485,26 +484,9 @@ export const useInputHandlers = ({
       }
       gameState.setSelectedPosition(null);
     }
-  }, [
-    levelState.isLevelTransition,
-    gameState.isSwapping,
-    gameState.isAnimating,
-    gameState.moves,
-    gameState.selectedPosition,
-    gameState.setSelectedPosition,
-    board,
-    activeBonus,
-    modernProductsSourcePos,
-    setModernProductsSourcePos,
-    setActiveBonus,
-    areAdjacent,
-    swapFigures,
-    gameState.setMoves,
-    specialCells,
-    applyAndFinalizeBonus,
-  ]);
+  };
 
-  const handleDragStart = useCallback((position: Position) => {
+  const handleDragStart = (position: Position) => {
     if (
       levelState.isLevelTransition ||
       gameState.isSwapping ||
@@ -519,17 +501,9 @@ export const useInputHandlers = ({
     }
 
     gameState.setSelectedPosition(position);
-    setTouchStartPosition(position);
-  }, [
-    levelState.isLevelTransition,
-    gameState.isSwapping,
-    gameState.isAnimating,
-    gameState.moves,
-    activeBonus,
-    gameState.setSelectedPosition,
-  ]);
+  };
 
-  const handleDragOver = useCallback((position: Position) => {
+  const handleDragOver = (position: Position) => {
     if (
       levelState.isLevelTransition ||
       !gameState.selectedPosition ||
@@ -544,7 +518,6 @@ export const useInputHandlers = ({
       return;
     }
 
-    // Проверяем, является ли позиция соседней
     if (areAdjacent(gameState.selectedPosition, position)) {
       swapFigures(
         gameState.selectedPosition,
@@ -554,35 +527,21 @@ export const useInputHandlers = ({
         specialCells
       );
       gameState.setSelectedPosition(null);
-      setTouchStartPosition(null);
     }
-  }, [
-    levelState.isLevelTransition,
-    gameState.selectedPosition,
-    gameState.isSwapping,
-    gameState.isAnimating,
-    gameState.moves,
-    activeBonus,
-    areAdjacent,
-    swapFigures,
-    gameState.setSelectedPosition,
-    gameState.setMoves,
-    specialCells,
-  ]);
+  };
 
-  const handleUseBonus = useCallback((type: Bonus["type"]) => {
+  const handleUseBonus = (type: Bonus["type"]) => {
     if (levelState.isLevelTransition || gameState.isAnimating) {
       return;
     }
     setModernProductsSourcePos(null);
     handleBonus(type, board);
-  }, [levelState.isLevelTransition, gameState.isAnimating, setModernProductsSourcePos, handleBonus, board]);
+  };
 
-  const resetSelection = useCallback(() => {
+  const resetSelection = () => {
     gameState.setSelectedPosition(null);
     setModernProductsSourcePos(null);
-    setTouchStartPosition(null);
-  }, [gameState.setSelectedPosition, setModernProductsSourcePos]);
+  };
 
   return {
     handleCellClick,
@@ -591,6 +550,5 @@ export const useInputHandlers = ({
     handleUseBonus,
     resetSelection,
     modernProductsSourcePos,
-    touchStartPosition,
   };
 };
