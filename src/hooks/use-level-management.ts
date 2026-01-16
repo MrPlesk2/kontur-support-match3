@@ -23,6 +23,7 @@ export const useLevelManagement = ({
     isLevelComplete: false,
     isLevelTransition: true,
     selectedBonuses: [],
+    isLevelFailed: false, // Новое поле
   });
 
   const currentLevel =
@@ -88,7 +89,7 @@ export const useLevelManagement = ({
   };
 
   // Effect: monitor moves & goals. If moves run out (and not animating / not in transition),
-  // restart the current level automatically (except when the level just transitioned/completed).
+  // show level transition screen for retry.
   useEffect(() => {
     if (
       levelState.isLevelTransition ||
@@ -98,16 +99,18 @@ export const useLevelManagement = ({
       return;
     }
 
-    // If no moves left and there's no animation in progress, restart the current level.
-    // We guard with completionTriggered to prevent double triggers.
-    // Если закончились ходы, вызывается вот это
-    // Тут есть рестарт уровня
+    // If no moves left and there's no animation in progress, show level transition for retry
     if (gameState.moves <= 0 && !isAnimating && !completionTriggered) {
+      console.log(`Уровень ${levelState.currentLevel} провален: закончились ходы`);
       setCompletionTriggered(true);
 
-      // small delay to allow frame/animation cleanup (consistent with other timeouts)
       setTimeout(() => {
-        restartCurrentLevel();
+        setLevelState((prev) => ({
+          ...prev,
+          isLevelFailed: true, // Устанавливаем флаг провала
+          isLevelTransition: true, // Показываем экран перехода
+        }));
+        isLevelInitialized.current = false;
         setCompletionTriggered(false);
       }, 300);
 
@@ -128,6 +131,7 @@ export const useLevelManagement = ({
           ...prev,
           isLevelComplete: true,
           isLevelTransition: true,
+          isLevelFailed: false, // Сбрасываем флаг провала при успешном завершении
         }));
         isLevelInitialized.current = false;
         setCompletionTriggered(false);
@@ -211,6 +215,7 @@ export const useLevelManagement = ({
       isLevelComplete: false,
       isLevelTransition: false,
       selectedBonuses,
+      isLevelFailed: false, // Сбрасываем флаг провала при начале уровня
     });
 
     isLevelInitialized.current = false;
