@@ -100,6 +100,7 @@ export const useLevelManagement = ({
     }
 
     // If no moves left and there's no animation in progress, show level transition for retry
+    // Тут проверяем, остались ли еще ходы
     if (gameState.moves <= 0 && !isAnimating && !completionTriggered) {
       console.log(`Уровень ${levelState.currentLevel} провален: закончились ходы`);
       setCompletionTriggered(true);
