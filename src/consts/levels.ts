@@ -150,7 +150,7 @@ export const LEVELS: Level[] = [
       { figure: "smartphone", target: 8, collected: 0 },
     ],
     bonuses: ["friendlyTeam", "itSphere", "knowledgeBase"],
-    moves: 25,
+    moves: 5,
     availableFigures: [
       "roundMessage",
       "rectangleMessage",

@@ -28,6 +28,67 @@ export const useLevelManagement = ({
   const currentLevel =
     LEVELS.find((level) => level.id === levelState.currentLevel) || LEVELS[0];
 
+  /**
+   * restartCurrentLevel
+   *
+   * Resets the current level to its initial state:
+   * - resets goals, moves, score, matches, selections, animations, modifiers, bonuses
+   * - creates a fresh board via createInitialBoard and sets it via setBoard
+   *
+   * SPECIFIC RUNTIME COMMENT: this function logs the string
+   * "RESTART_CURRENT_LEVEL: invoked for level <levelId> at <ISO timestamp>"
+   * on every invocation (so you can find every restart in logs).
+   */
+  const restartCurrentLevel = () => {
+    // SPECIFIC RUNTIME COMMENT (logged on every call)
+    console.log(
+      `RESTART_CURRENT_LEVEL: invoked for level ${levelState.currentLevel} at ${new Date().toISOString()}`
+    );
+
+    // Prepare level defaults
+    const levelGoals = getLevelGoals(levelState.currentLevel);
+    const levelMoves = getLevelMoves(levelState.currentLevel);
+
+    // Reset game state (same logic as initialisation)
+    gameState.setGoals(() =>
+      levelGoals.map((goal) => ({ ...goal, collected: 0 }))
+    );
+    gameState.setMoves(() => levelMoves);
+    gameState.setScore(() => 0);
+    gameState.setMatches([]);
+    gameState.setSelectedPosition(null);
+    gameState.setIsSwapping(false);
+    gameState.setIsAnimating(false);
+    gameState.setActiveBonus(null);
+    gameState.setModifiers({
+      doublePoints: false,
+      doubleGoalProgress: false,
+      extraMoves: 0,
+    });
+
+    if (levelState.selectedBonuses.length > 0) {
+      const selectedBonusesWithCount = levelState.selectedBonuses.map(
+        (type) => ({
+          type,
+          count: 3,
+        })
+      );
+      gameState.setBonuses(() => selectedBonusesWithCount);
+    } else {
+      gameState.setBonuses(() => []);
+    }
+
+    // Recreate and set a fresh board
+    const newBoard = createInitialBoard(currentLevel);
+    setBoard(newBoard);
+
+    // Mark as initialized so normal flows continue
+    isLevelInitialized.current = true;
+    setCompletionTriggered(false);
+  };
+
+  // Effect: monitor moves & goals. If moves run out (and not animating / not in transition),
+  // restart the current level automatically (except when the level just transitioned/completed).
   useEffect(() => {
     if (
       levelState.isLevelTransition ||
@@ -37,27 +98,21 @@ export const useLevelManagement = ({
       return;
     }
 
-    // Для 6-го уровня проверяем только количество ходов
-    if (currentLevel.id === 6) {
-      // Завершаем уровень, когда ходы закончились и нет активной анимации
-      if (gameState.moves <= 0 && !isAnimating && !completionTriggered) { // тут заканчиваем бесконечный уровень
-        console.log("6 уровень завершен: закончились ходы");
-        setCompletionTriggered(true);
+    // If no moves left and there's no animation in progress, restart the current level.
+    // We guard with completionTriggered to prevent double triggers.
+    if (gameState.moves <= 0 && !isAnimating && !completionTriggered) {
+      setCompletionTriggered(true);
 
-        setTimeout(() => {
-          setLevelState((prev) => ({
-            ...prev,
-            isLevelComplete: true,
-            isLevelTransition: true,
-          }));
-          isLevelInitialized.current = false;
-          setCompletionTriggered(false);
-        }, 300);
-      }
-      return; // Не проверяем цели для 6-го уровня
+      // small delay to allow frame/animation cleanup (consistent with other timeouts)
+      setTimeout(() => {
+        restartCurrentLevel();
+        setCompletionTriggered(false);
+      }, 300);
+
+      return;
     }
 
-    // Для обычных уровней проверяем выполнение целей
+    // For non-move completion (objective-based) finishes:
     const allGoalsCompleted = gameState.goals.every(
       (goal) => goal.collected >= goal.target
     );
@@ -87,6 +142,7 @@ export const useLevelManagement = ({
     currentLevel.id,
   ]);
 
+  // Initialization effect: runs when levelState changes from transition -> active
   useEffect(() => {
     if (levelState.isLevelTransition) {
       isLevelInitialized.current = false;
@@ -132,7 +188,6 @@ export const useLevelManagement = ({
 
     isLevelInitialized.current = true;
     setCompletionTriggered(false);
-
   }, [
     levelState.currentLevel,
     levelState.isLevelTransition,
@@ -143,7 +198,6 @@ export const useLevelManagement = ({
   ]);
 
   const handleLevelStart = (nextLevel: number, selectedBonuses: BonusType[]) => {
-
     const nextLevelData = LEVELS.find((level) => level.id === nextLevel);
 
     if (!nextLevelData) {
@@ -165,5 +219,7 @@ export const useLevelManagement = ({
     levelState,
     currentLevel,
     handleLevelStart,
+    // export restart so callers (tests, UI, debug) can trigger it manually if needed
+    restartCurrentLevel,
   };
 };
