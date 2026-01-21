@@ -124,7 +124,7 @@ export const LEVELS: Level[] = [
     goals: [
       {
         figure: "teamCell",
-        target: 15,
+        target: 19,
         collected: 0,
       }
     ],

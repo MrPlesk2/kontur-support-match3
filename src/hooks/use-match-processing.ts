@@ -352,11 +352,11 @@ export const useMatchProcessing = ({
                   console.log(`Level 5: Team progress ${oldCollected} -> ${newCollected}`);
 
                   // Проверяем пороги и обновляем изображение команды
-                  if (newCollected >= 12 && oldCollected < 12) {
+                  if (newCollected >= 14 && oldCollected < 14) {
                     console.log("Progressing to team happy three");
                     boardToProcess = progressTeamHappyThree(boardToProcess);
                     setBoard([...boardToProcess]);
-                  } else if (newCollected >= 8 && oldCollected < 8) {
+                  } else if (newCollected >= 9 && oldCollected < 9) {
                     console.log("Progressing to team happy two");
                     boardToProcess = progressTeamHappyTwo(boardToProcess);
                     setBoard([...boardToProcess]);
