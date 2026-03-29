@@ -16,3 +16,17 @@
   height: 452px;
   overflow: visible;
 }
+
+.field-wrapper {
+  position: relative;
+}
+
+.figure-overlay {
+  pointer-events: none;
+}
+
+.figure-overlay-img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}

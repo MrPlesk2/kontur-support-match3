@@ -206,6 +206,25 @@ export const useMatchProcessing = ({
     return false;
   }, []);
 
+  const applyGravityAndFillStepwise = async (
+    boardState: Board,
+    level?: Level
+  ): Promise<Board> => {
+    let boardToProcess = boardState;
+
+    while (boardToProcess.some((row) => row.some((cell) => cell === null))) {
+      boardToProcess = applyGravity(boardToProcess);
+      setBoard([...boardToProcess]);
+      await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+
+      boardToProcess = fillEmptySlots(boardToProcess, level);
+      setBoard([...boardToProcess]);
+      await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+    }
+
+    return boardToProcess;
+  };
+
   const processMatches = useCallback(
     async (currentBoard: Board, currentSpecialCells: SpecialCell[] = [], options?: { skipGoldenRestore: boolean }): Promise<Board> => {
       // Защита от повторного входа
@@ -434,21 +453,12 @@ export const useMatchProcessing = ({
           await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
           setMatches([]);
 
-          // Применяем гравитацию
-          let boardWithGravity = applyGravity(boardToProcess);
-          boardToProcess = boardWithGravity;
-          setBoard(boardToProcess);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-
-          // Fill empty
+          // Применяем гравитацию + заполнение «по одной клетке» пока есть пустые
           const lvl = currentLevel
             ? { ...currentLevel, specialCells: updatedSpecialCells }
             : undefined;
 
-          boardToProcess = fillEmptySlots(boardToProcess, lvl);
-          setBoard(boardToProcess);
-
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+          boardToProcess = await applyGravityAndFillStepwise(boardToProcess, lvl);
 
           // Для 5 уровня применяем горизонтальную гравитацию
           if (lvl?.id === 5) {
@@ -458,12 +468,8 @@ export const useMatchProcessing = ({
             await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
             if (result.isChanged) {
-              boardToProcess = applyGravity(boardToProcess);
-              setBoard(boardToProcess);
+              boardToProcess = await applyGravityAndFillStepwise(boardToProcess, lvl);
               await new Promise((r) => setTimeout(r, ANIMATION_DURATION / 2));
-
-              boardToProcess = fillEmptySlots(boardToProcess, lvl);
-              setBoard(boardToProcess);
             }
           }
 
@@ -520,17 +526,11 @@ export const useMatchProcessing = ({
             return next;
           });
 
-          boardToProcess = applyGravity(boardToProcess);
-          setBoard([...boardToProcess]);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-
           const lvl = currentLevel
             ? { ...currentLevel, specialCells: updatedSpecialCells }
             : undefined;
 
-          boardToProcess = fillEmptySlots(boardToProcess, lvl);
-          setBoard([...boardToProcess]);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+          boardToProcess = await applyGravityAndFillStepwise(boardToProcess, lvl);
 
           // Восстанавливаем golden cells если не пропущено
           updatedSpecialCells.forEach((sc) => {
@@ -581,17 +581,11 @@ export const useMatchProcessing = ({
             return next;
           });
 
-          boardToProcess = applyGravity(boardToProcess);
-          setBoard([...boardToProcess]);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
-
           const lvl = currentLevel
             ? { ...currentLevel, specialCells: updatedSpecialCells }
             : undefined;
 
-          boardToProcess = fillEmptySlots(boardToProcess, lvl);
-          setBoard([...boardToProcess]);
-          await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+          boardToProcess = await applyGravityAndFillStepwise(boardToProcess, lvl);
 
           // Восстанавливаем golden cells если не пропущено
           updatedSpecialCells.forEach((sc) => {

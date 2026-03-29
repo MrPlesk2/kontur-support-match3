@@ -1,11 +1,13 @@
 import React from "react";
-import { Figure, Position, SpecialCell } from "types";
+import { motion } from "framer-motion";
+import { Position, SpecialCell, Figure } from "types";
 import { FIGURE_PATHS } from "consts";
 import "./cell.styles.css";
 import { isTeamImage } from "@utils/game-utils";
 
 type CellProps = {
   figure: Figure | null;
+  figureId: string;
   position: Position;
   isSelected: boolean;
   isModernProductsSource: boolean;
@@ -19,6 +21,7 @@ type CellProps = {
 
 export const Cell: React.FC<CellProps> = ({
   figure,
+  figureId,
   position,
   isSelected,
   isModernProductsSource,
@@ -139,17 +142,22 @@ export const Cell: React.FC<CellProps> = ({
     >
       <div className="cell-content">
         {figure && (
-          <img
+          <motion.img
+            layoutId={figureId}
             src={FIGURE_PATHS[figure]}
             alt={figure}
             className={`
-              figure 
-              ${isStar ? "figure--star" : ""} 
+              figure
+              ${isStar ? "figure--star" : ""}
               ${isDiamond ? "figure--diamond" : ""}
               ${isTeamBigFigure ? "figure--big" : ""}
               ${isTeamImage(figure) ? "figure--big--image" : ""}
             `}
             draggable={false}
+            initial={{ y: -12, opacity: 0.8 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: "spring", stiffness: 550, damping: 30, duration: 0.1 }}
           />
         )}
       </div>

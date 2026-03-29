@@ -277,16 +277,19 @@ export const useBonuses = ({
     ];
 
     if (bonusChange.includes(bonusType)) {
-      setBoard([...boardWithHoles]);
-      await new Promise((r) => setTimeout(r, 200));
-
-      let next = applyGravity(boardWithHoles);
+      let next = boardWithHoles;
       setBoard([...next]);
       await new Promise((r) => setTimeout(r, 200));
 
-      next = fillEmptySlots(next);
-      setBoard([...next]);
-      await new Promise((r) => setTimeout(r, 200));
+      while (next.some((row) => row.some((cell) => cell === null))) {
+        next = applyGravity(next);
+        setBoard([...next]);
+        await new Promise((r) => setTimeout(r, 200));
+
+        next = fillEmptySlots(next);
+        setBoard([...next]);
+        await new Promise((r) => setTimeout(r, 200));
+      }
 
       return next;
     }

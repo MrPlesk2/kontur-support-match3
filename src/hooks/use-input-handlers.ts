@@ -68,6 +68,25 @@ export const useInputHandlers = ({
   // Флаг для предотвращения двойной обработки специальных фигур
   const isProcessingSpecialFigures = useRef(false);
 
+  const applyGravityAndFillStepwise = async (
+    boardState: Board,
+    level: typeof LEVELS[number]
+  ): Promise<Board> => {
+    let nextBoard = boardState;
+
+    while (nextBoard.some((row) => row.some((cell) => cell === null))) {
+      nextBoard = applyGravity(nextBoard);
+      setBoard([...nextBoard]);
+      await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+
+      nextBoard = fillEmptySlots(nextBoard, level);
+      setBoard([...nextBoard]);
+      await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
+    }
+
+    return nextBoard;
+  };
+
   // Функция для обработки алмазов и звезд в нижнем ряду
   const processSpecialFigures = (currentBoard: Board): { board: Board; hasSpecialFigures: boolean } => {
     // Защита от повторного входа
@@ -333,10 +352,11 @@ export const useInputHandlers = ({
       setBoard([...boardWithHoles]);
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      let updatedBoard = applyGravity(boardWithHoles);
-      setBoard([...updatedBoard]);
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
+      let updatedBoard = await applyGravityAndFillStepwise(
+        boardWithHoles,
+        LEVELS[levelState.currentLevel - 1]
+      );
+
       // Проверяем и обрабатываем алмазы/звезды в нижнем ряду после гравитации
       // УБИРАЕМ ЦИКЛ while - обрабатываем только один раз
       const specialResult = processSpecialFigures(updatedBoard);
@@ -344,38 +364,46 @@ export const useInputHandlers = ({
         updatedBoard = specialResult.board;
         setBoard([...updatedBoard]);
         await new Promise(resolve => setTimeout(resolve, 200));
-        
-        updatedBoard = applyGravity(updatedBoard);
-        setBoard([...updatedBoard]);
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // После гравитации может появиться еще одна фигура внизу, 
+
+        updatedBoard = await applyGravityAndFillStepwise(
+          updatedBoard,
+          LEVELS[levelState.currentLevel - 1]
+        );
+
+        // После гравитации может появиться еще одна фигура внизу,
         // но она будет обработана в следующем ходе, а не в цикле
       }
 
       const updatedBoardIsChanged = applyHorizontalGravity(updatedBoard);
-      
+
       if (updatedBoardIsChanged.isChanged) {
         setBoard([...updatedBoardIsChanged.board]);
         await new Promise(resolve => setTimeout(resolve, 200));
-        updatedBoard = applyGravity(updatedBoardIsChanged.board);
-        setBoard(updatedBoard);
-        await new Promise((r) => setTimeout(r, ANIMATION_DURATION/2));
-        
+        updatedBoard = await applyGravityAndFillStepwise(
+          updatedBoardIsChanged.board,
+          LEVELS[levelState.currentLevel - 1]
+        );
+
         // Снова проверяем специальные фигуры после горизонтальной гравитации
         const specialResult2 = processSpecialFigures(updatedBoard);
         if (specialResult2.hasSpecialFigures) {
           updatedBoard = specialResult2.board;
           setBoard([...updatedBoard]);
           await new Promise(resolve => setTimeout(resolve, 200));
-          
-          updatedBoard = applyGravity(updatedBoard);
-          setBoard([...updatedBoard]);
-          await new Promise(resolve => setTimeout(resolve, 200));
+
+          updatedBoard = await applyGravityAndFillStepwise(
+            updatedBoard,
+            LEVELS[levelState.currentLevel - 1]
+          );
         }
       }
 
-      updatedBoard = fillEmptySlots(updatedBoard, LEVELS[levelState.currentLevel - 1]);
+      // Вызываем повторно, чтобы гарантировать, что поле полностью заполнено после всех гравитаций
+      updatedBoard = await applyGravityAndFillStepwise(
+        updatedBoard,
+        LEVELS[levelState.currentLevel - 1]
+      );
+
       setBoard([...updatedBoard]);
       await new Promise(resolve => setTimeout(resolve, 200));
 

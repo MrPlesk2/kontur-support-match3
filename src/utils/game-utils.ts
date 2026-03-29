@@ -129,15 +129,18 @@ export const applyGravity = (board: Board): Board => {
   const newBoard = board.map((row) => [...row]);
 
   for (let col = 0; col < BOARD_COLS; col++) {
-    let emptySlots = 0;
+    // Падение на один шаг для каждой фигуры (снизу вверх)
+    for (let row = BOARD_ROWS - 2; row >= 0; row--) {
+      const current = newBoard[row][col];
+      const below = newBoard[row + 1][col];
 
-    for (let row = BOARD_ROWS - 1; row >= 0; row--) {
-      if (newBoard[row][col] === null) {
-        emptySlots++;
-      } else if (newBoard[row][col] === "team" || isTeamImage(newBoard[row][col])) {
-        emptySlots = 0;
-      } else if (emptySlots > 0) {
-        newBoard[row + emptySlots][col] = newBoard[row][col];
+      if (
+        current !== null &&
+        current !== "team" &&
+        !isTeamImage(current) &&
+        below === null
+      ) {
+        newBoard[row + 1][col] = current;
         newBoard[row][col] = null;
       }
     }
