@@ -1,7 +1,7 @@
-import { Figure } from "./figure";
+import { FigureType } from "./figure";
 
 export type Goal = {
-  figure: Figure;
+  figure: FigureType;
   target: number;
   collected: number;
 };

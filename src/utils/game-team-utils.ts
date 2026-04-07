@@ -1,17 +1,27 @@
-import { Board } from "types";
+import { Board, Figure, FigureType } from "types";
 import { BOARD_ROWS, BOARD_COLS } from "consts";
-import { isTeamImage } from "./game-utils";
+import { isTeamImage } from "@utils/game-utils";
+
+const promoteTeamImage = (
+  figure: Figure,
+  nextType: Extract<FigureType, "teamImage1" | "teamImage2" | "teamImage3">
+): Figure => ({
+  ...figure,
+  type: nextType,
+});
 
 export const progressTeamHappyOne = (board: Board): Board => {
   const newBoard = board.map((row) => [...row]);
 
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = BOARD_ROWS - 1; row >= 0; row--) {
-        if (isTeamImage(newBoard[row][col])) {
-            newBoard[row][col] = "teamImage1";
-        }
+      const cell = newBoard[row][col];
+      if (cell && isTeamImage(cell)) {
+        newBoard[row][col] = promoteTeamImage(cell, "teamImage1");
+      }
     }
   }
+
   return newBoard;
 };
 
@@ -20,11 +30,13 @@ export const progressTeamHappyTwo = (board: Board): Board => {
 
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = BOARD_ROWS - 1; row >= 0; row--) {
-        if (isTeamImage(newBoard[row][col])) {
-            newBoard[row][col] = "teamImage2";
-        }
+      const cell = newBoard[row][col];
+      if (cell && isTeamImage(cell)) {
+        newBoard[row][col] = promoteTeamImage(cell, "teamImage2");
+      }
     }
   }
+
   return newBoard;
 };
 
@@ -33,10 +45,12 @@ export const progressTeamHappyThree = (board: Board): Board => {
 
   for (let col = 0; col < BOARD_COLS; col++) {
     for (let row = BOARD_ROWS - 1; row >= 0; row--) {
-        if (isTeamImage(newBoard[row][col])) {
-            newBoard[row][col] = "teamImage3";
-        }
+      const cell = newBoard[row][col];
+      if (cell && isTeamImage(cell)) {
+        newBoard[row][col] = promoteTeamImage(cell, "teamImage3");
+      }
     }
   }
+
   return newBoard;
 };

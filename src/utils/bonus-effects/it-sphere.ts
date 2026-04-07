@@ -1,8 +1,8 @@
-import { Board, Figure, Position, SpecialCell } from "types";
+import { Board, Figure, FigureType, Position, SpecialCell } from "types";
 import { BOARD_ROWS } from "consts";
 import { isTeamImage } from "@utils/game-utils";
 
-const forbidden = new Set<Figure>([
+const forbidden = new Set<FigureType>([
   "star",
   "diamond",
   "goldenCell",
@@ -12,16 +12,17 @@ const forbidden = new Set<Figure>([
   "teamImage1",
   "teamImage2",
   "teamImage3",
-] as Figure[]);
+]);
 
-const isUsable = (f: Figure | null) => {
+// ✅ type guard — теперь TS понимает что f !== null
+const isUsable = (f: Figure | null): f is Figure => {
   if (!f) return false;
-  if (forbidden.has(f)) return false;
-  if (isTeamImage(f)) return false;
+  if (forbidden.has(f.type)) return false;
+  if (isTeamImage(f.type)) return false;
   return true;
 };
 
-/** legacy: удалить самый частый тип */
+/** удалить самый частый тип */
 export const applyItSphereEffect = (
   board: Board,
   specialCells: SpecialCell[] = []
@@ -31,28 +32,29 @@ export const applyItSphereEffect = (
   removedFigures: Array<{ position: Position; figure: Figure }>;
   removedGoldenCells: Position[];
 } => {
-  const freq = new Map<Figure, number>();
+  const freq = new Map<FigureType, number>();
 
+  // 🔥 считаем частоты
   for (let r = 0; r < BOARD_ROWS; r++) {
     for (let c = 0; c < board[r].length; c++) {
       const f = board[r][c];
       if (isUsable(f)) {
-        freq.set(f!, (freq.get(f!) || 0) + 1);
+        freq.set(f.type, (freq.get(f.type) || 0) + 1);
       }
     }
   }
 
-  let target: Figure | null = null;
+  let targetType: FigureType | null = null;
   let max = -1;
 
-  freq.forEach((count, fig) => {
+  freq.forEach((count, figType) => {
     if (count > max) {
       max = count;
-      target = fig;
+      targetType = figType;
     }
   });
 
-  if (!target) {
+  if (!targetType) {
     return {
       board,
       matchedPositions: [],
@@ -64,16 +66,23 @@ export const applyItSphereEffect = (
   const matchedPositions: Position[] = [];
   const removedFigures: Array<{ position: Position; figure: Figure }> = [];
   const removedGoldenCells: Position[] = [];
+
   const newBoard = board.map((r) => [...r]);
 
+  // 🔥 удаляем все фигуры нужного типа
   for (let r = 0; r < BOARD_ROWS; r++) {
     for (let c = 0; c < newBoard[r].length; c++) {
-      if (newBoard[r][c] === target) {
+      const cell = newBoard[r][c];
+
+      if (cell && cell.type === targetType) {
         const pos = { row: r, col: c };
+
         matchedPositions.push(pos);
-        removedFigures.push({ position: pos, figure: target });
+        removedFigures.push({ position: pos, figure: cell });
+
         newBoard[r][c] = null;
 
+        // golden
         for (let i = 0; i < specialCells.length; i++) {
           const sc = specialCells[i];
           if (
@@ -127,6 +136,7 @@ export const applyItSphereAt = (
   }
 
   const targetFig = board[row][col];
+
   if (!isUsable(targetFig)) {
     return {
       board,
@@ -136,17 +146,24 @@ export const applyItSphereAt = (
     };
   }
 
+  const targetType = targetFig.type;
+
   const matchedPositions: Position[] = [];
   const removedFigures: Array<{ position: Position; figure: Figure }> = [];
   const removedGoldenCells: Position[] = [];
+
   const newBoard = board.map((r) => [...r]);
 
   for (let r = 0; r < BOARD_ROWS; r++) {
     for (let c = 0; c < newBoard[r].length; c++) {
-      if (newBoard[r][c] === targetFig) {
-        const pos = { row: r, col: c };
-        matchedPositions.push(pos);
-        removedFigures.push({ position: pos, figure: targetFig! });
+      const cell = newBoard[r][c];
+
+      if (cell && cell.type === targetType) {
+        const p = { row: r, col: c };
+
+        matchedPositions.push(p);
+        removedFigures.push({ position: p, figure: cell });
+
         newBoard[r][c] = null;
 
         for (let i = 0; i < specialCells.length; i++) {
@@ -157,7 +174,7 @@ export const applyItSphereAt = (
             sc.type === "golden" &&
             sc.isActive !== false
           ) {
-            removedGoldenCells.push(pos);
+            removedGoldenCells.push(p);
             break;
           }
         }

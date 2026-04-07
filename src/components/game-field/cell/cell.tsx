@@ -97,10 +97,7 @@ export const Cell: React.FC<CellProps> = ({
     if (isBlocked) return;
     if (e.pointerType === "mouse" && e.buttons === 0) return;
 
-    const el = document.elementFromPoint(
-      e.clientX,
-      e.clientY
-    ) as HTMLElement | null;
+    const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
     if (!el) return;
 
     const cellEl = el.closest(".cell") as HTMLElement | null;
@@ -114,9 +111,10 @@ export const Cell: React.FC<CellProps> = ({
     }
   };
 
-  const isStar = figure === "star";
-  const isDiamond = figure === "diamond";
-  const isTeamBigFigure = figure && (figure === "team" || isTeamImage(figure));
+  const isStar = figure?.type === "star";
+  const isDiamond = figure?.type === "diamond";
+  const isTeamBigFigure =
+    figure?.type === "team" || isTeamImage(figure?.type ?? null);
 
   const startTransform = (() => {
     if (disableAnimation) return "translate3d(0px, 0px, 0) scale(1)";
@@ -201,14 +199,14 @@ export const Cell: React.FC<CellProps> = ({
             }}
           >
             <img
-              src={FIGURE_PATHS[figure]}
-              alt={figure}
+              src={FIGURE_PATHS[figure.type]}
+              alt={figure.type}
               className={[
                 "figure",
                 isStar ? "figure--star" : "",
                 isDiamond ? "figure--diamond" : "",
                 isTeamBigFigure ? "figure--big" : "",
-                isTeamImage(figure) ? "figure--big--image" : "",
+                isTeamImage(figure.type) ? "figure--big--image" : "",
               ]
                 .filter(Boolean)
                 .join(" ")}

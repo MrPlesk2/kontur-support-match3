@@ -25,4 +25,25 @@ export const FIGURES = [
   "bulb",
 ] as const;
 
-export type Figure = (typeof FIGURES)[number];
+export type FigureType = (typeof FIGURES)[number];
+
+export type Figure = {
+  id: string;
+  type: FigureType;
+};
+
+const createFigureId = () => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `figure-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+};
+
+export const createFigure = (type: FigureType, id?: string): Figure => ({
+  id: id ?? createFigureId(),
+  type,
+});
+
+export const isFigureType = (value: unknown): value is FigureType =>
+  typeof value === "string" && (FIGURES as readonly string[]).includes(value);

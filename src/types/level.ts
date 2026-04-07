@@ -1,5 +1,5 @@
+import { FigureType } from "./figure";
 import { Goal } from "./goal";
-import { Figure } from "./figure";
 import { SpecialCell } from "./special-cell";
 import { Position } from "./position";
 import { Bonus } from "./bonus";
@@ -11,7 +11,7 @@ export type Level = {
   goals: Goal[];
   bonuses: Bonus[];
   moves: number;
-  availableFigures: Figure[];
+  availableFigures?: FigureType[];
   specialCells?: SpecialCell[];
   starPositions?: Position[];
   diamondPositions?: Position[];

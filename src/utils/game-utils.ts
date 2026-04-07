@@ -1,56 +1,84 @@
-import { Board, Position, Match, Figure } from "types";
+import { Board, Figure, FigureType, Match, Position } from "types";
 import { BOARD_ROWS, BOARD_COLS, MIN_MATCH_LENGTH } from "consts";
+
+const normalizeBoard = (inputBoard: Board): Board => {
+  return Array.from({ length: BOARD_ROWS }, (_, row) => {
+    const rowData = inputBoard[row] || [];
+    const normalized = rowData.slice(0, BOARD_COLS);
+    while (normalized.length < BOARD_COLS) normalized.push(null);
+    return normalized;
+  });
+};
+
+const getFigureType = (figure: Figure | FigureType | null | undefined): FigureType | null => {
+  if (!figure) return null;
+  return typeof figure === "string" ? figure : figure.type;
+};
+
+export const isTeamImage = (figure: Figure | FigureType | null): boolean => {
+  const type = getFigureType(figure);
+  return (
+    type === "teamImage0" ||
+    type === "teamImage1" ||
+    type === "teamImage2" ||
+    type === "teamImage3"
+  );
+};
+
+export const isBigFigure = (figure: Figure | null): boolean => {
+  if (!figure) return false;
+  return figure.type === "team" || isTeamImage(figure.type);
+};
+
+export const isSpecialFigure = (figure: Figure | FigureType | null): boolean => {
+  const type = getFigureType(figure);
+  if (!type) return false;
+  return (
+    type === "team" ||
+    type === "teamCell" ||
+    type === "goldenCell" ||
+    type === "diamond" ||
+    type === "star" ||
+    isTeamImage(type)
+  );
+};
 
 export const willCreateMatch = (
   board: Board,
   pos1: Position,
   pos2: Position
 ): boolean => {
-  if (!board[pos1.row][pos1.col] || !board[pos2.row][pos2.col]) {
+  const safeBoard = normalizeBoard(board);
+
+  if (!safeBoard[pos1.row]?.[pos1.col] || !safeBoard[pos2.row]?.[pos2.col]) {
     return false;
   }
 
-  const testBoard = board.map((row) => [...row]);
+  const testBoard = safeBoard.map((row) => [...row]);
   const temp = testBoard[pos1.row][pos1.col];
   testBoard[pos1.row][pos1.col] = testBoard[pos2.row][pos2.col];
   testBoard[pos2.row][pos2.col] = temp;
 
-  const matches = findAllMatches(testBoard);
-
-  return matches.length > 0;
-};
-
-export const isTeamImage = (figure: string | null): boolean => {
-  if (!figure) return false;
-  return figure === "teamImage0" || 
-         figure === "teamImage1" || 
-         figure === "teamImage2" || 
-         figure === "teamImage3";
-};
-
-export const isBigFigure = (figure: Figure | null): boolean => {
-  if (!figure) return false;
-  return figure === "team" || isTeamImage(figure);
-};
-
-export const isSpecialFigure = (figure: Figure | null): boolean => {
-  if (!figure) return false;
-  return figure === "team" || 
-         figure === "teamCell" ||
-         figure === "goldenCell" ||
-         figure === "diamond" ||
-         figure === "star" ||
-         isTeamImage(figure);
+  return findAllMatches(testBoard).length > 0;
 };
 
 export const findAllMatches = (board: Board): Match[] => {
+  const safeBoard = normalizeBoard(board);
   const matches: Match[] = [];
 
   for (let row = 0; row < BOARD_ROWS; row++) {
     let col = 0;
+
     while (col < BOARD_COLS - 2) {
-      const figure = board[row][col];
-      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team" || isTeamImage(figure)) {
+      const figure = safeBoard[row][col]?.type ?? null;
+
+      if (
+        !figure ||
+        figure === "star" ||
+        figure === "diamond" ||
+        figure === "team" ||
+        isTeamImage(figure)
+      ) {
         col++;
         continue;
       }
@@ -58,7 +86,7 @@ export const findAllMatches = (board: Board): Match[] => {
       let matchLength = 1;
       while (
         col + matchLength < BOARD_COLS &&
-        board[row][col + matchLength] === figure
+        safeBoard[row][col + matchLength]?.type === figure
       ) {
         matchLength++;
       }
@@ -78,9 +106,17 @@ export const findAllMatches = (board: Board): Match[] => {
 
   for (let col = 0; col < BOARD_COLS; col++) {
     let row = 0;
+
     while (row < BOARD_ROWS - 2) {
-      const figure = board[row][col];
-      if (!figure || figure === "star" || board[row][col] === "diamond" || figure === "team" || isTeamImage(figure)) {
+      const figure = safeBoard[row][col]?.type ?? null;
+
+      if (
+        !figure ||
+        figure === "star" ||
+        figure === "diamond" ||
+        figure === "team" ||
+        isTeamImage(figure)
+      ) {
         row++;
         continue;
       }
@@ -88,7 +124,7 @@ export const findAllMatches = (board: Board): Match[] => {
       let matchLength = 1;
       while (
         row + matchLength < BOARD_ROWS &&
-        board[row + matchLength][col] === figure
+        safeBoard[row + matchLength][col]?.type === figure
       ) {
         matchLength++;
       }
@@ -110,33 +146,32 @@ export const findAllMatches = (board: Board): Match[] => {
 };
 
 export const updateBoardAfterMatches = (board: Board): Board => {
-  const newBoard = board.map((row) => [...row]);
+  const newBoard = normalizeBoard(board).map((row) => [...row]);
   const matches = findAllMatches(newBoard);
 
   matches.forEach((match) => {
     match.positions.forEach(({ row, col }) => {
       const figure = newBoard[row][col];
-      if (figure !== "teamCell") {
+      if (figure?.type !== "teamCell") {
         newBoard[row][col] = null;
       }
     });
   });
 
-  return newBoard;
+  return normalizeBoard(newBoard);
 };
 
 export const applyGravity = (board: Board): Board => {
-  const newBoard = board.map((row) => [...row]);
+  const newBoard = normalizeBoard(board).map((row) => [...row]);
 
   for (let col = 0; col < BOARD_COLS; col++) {
-    // Падение на один шаг для каждой фигуры (снизу вверх)
     for (let row = BOARD_ROWS - 2; row >= 0; row--) {
       const current = newBoard[row][col];
       const below = newBoard[row + 1][col];
 
       if (
         current !== null &&
-        current !== "team" &&
+        current.type !== "team" &&
         !isTeamImage(current) &&
         below === null
       ) {
@@ -146,86 +181,14 @@ export const applyGravity = (board: Board): Board => {
     }
   }
 
-  return newBoard;
+  return normalizeBoard(newBoard);
 };
 
-export const applyHorizontalGravity = (board: Board): {board: Board, isChanged: boolean} => {
-  const newBoard: Board = board.map(row => [...row]);
-  let isChanged = false;
-  for (const rowIndex of [5, 4]) {
-    if (rowIndex >= BOARD_ROWS) continue;
-
-    const row = [...newBoard[rowIndex]];
-
-    // Проходим слева направо, затем справа налево для корректного смещения
-    for (let col = 3; col < BOARD_COLS; col++) {
-      const cell = row[col];
-      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
-
-      let targetCol = 3;
-
-      if (col === targetCol) continue;
-
-      // Определяем шаг: +1 если двигаемся вправо, -1 если влево
-      const step = -1;
-      let currentCol = col;
-
-      while (currentCol !== targetCol) {
-        const nextCol = currentCol + step;
-
-        if (!row[nextCol]) {
-          row[nextCol] = row[currentCol];
-          row[currentCol] = null;
-          currentCol = nextCol;
-          isChanged = true;
-        } else {
-          // следующая клетка занята — останавливаемся
-          break;
-        }
-      }
-    }
-
-    for (let col = 2; col >=0; col--) {
-      const cell = row[col];
-      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
-
-      let targetCol = 2;
-
-      if (col === targetCol) continue;
-
-      // Определяем шаг: +1 если двигаемся вправо, -1 если влево
-      const step = 1;
-      let currentCol = col;
-
-      while (currentCol !== targetCol) {
-        const nextCol = currentCol + step;
-
-        if (!row[nextCol]) {
-          row[nextCol] = row[currentCol];
-          row[currentCol] = null;
-          currentCol = nextCol;
-          isChanged = true;
-        } else {
-          // следующая клетка занята — останавливаемся
-          break;
-        }
-      }
-    }
-
-    newBoard[rowIndex] = row;
-  }
-
-  return {board: newBoard, isChanged};
-};
-
-export const isValidPosition = (position: Position): boolean => {
-  return (
-    position.row >= 0 &&
-    position.row < BOARD_ROWS &&
-    position.col >= 0 &&
-    position.col < BOARD_COLS
-  );
-};
+export const isValidPosition = (position: Position): boolean =>
+  position.row >= 0 &&
+  position.row < BOARD_ROWS &&
+  position.col >= 0 &&
+  position.col < BOARD_COLS;
 
 export const getUniquePositions = (matches: Match[]): Position[] => {
   const uniquePositions = new Set<string>();

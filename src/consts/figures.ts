@@ -1,4 +1,4 @@
-import { Figure } from "types";
+import { FigureType } from "types";
 import pencilImg from "@/assets/images/figures/pencil.svg";
 import questionBookImg from "@/assets/images/figures/questionBook.svg";
 import openBookImg from "@/assets/images/figures/openBook.svg";
@@ -24,7 +24,7 @@ import handshakeImg from "@/assets/images/figures/handshake.svg";
 import kpiImg from "@/assets/images/figures/kpi.svg";
 import bulbImg from "@/assets/images/figures/bulb.svg";
 
-export const FIGURE_PATHS: Record<Figure, string> = {
+export const FIGURE_PATHS: Record<FigureType, string> = {
   pencil: pencilImg,
   questionBook: questionBookImg,
   openBook: openBookImg,

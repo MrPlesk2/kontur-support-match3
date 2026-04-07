@@ -7,6 +7,7 @@ import {
   Goal,
   BonusType,
   Figure,
+  FigureType,
   Position,
   SpecialCell,
 } from "types";
@@ -65,14 +66,13 @@ export const useBonuses = ({
       "remoteWork",
       "openGuide",
       "modernProducts",
-      // "itSphere",
       "dms",
     ];
     return allBonuses[Math.floor(Math.random() * allBonuses.length)];
   }, []);
 
   const getRandomFigureForLevel6 = useCallback(
-    (availableFigures: Figure[], excludeFigures: Figure[] = []): Figure => {
+    (availableFigures: FigureType[], excludeFigures: FigureType[] = []): FigureType => {
       const filteredFigures = availableFigures.filter(
         (fig) =>
           ![
@@ -105,7 +105,6 @@ export const useBonuses = ({
     []
   );
 
-  // Замена выполненных целей на 6 уровне
   const replaceCompletedGoalsForLevel6 = useCallback(
     (prevGoals: Goal[]): Goal[] => {
       if (currentLevelId !== 6) return prevGoals;
@@ -189,7 +188,6 @@ export const useBonuses = ({
       removedFigures: Array<{ position: Position; figure: Figure }>,
       removedGoldenCells: Position[]
     ) => {
-      // golden cells
       if (removedGoldenCells.length > 0) {
         let updatedSpecialCells = [...specialCells];
         let goldenCellsUpdated = false;
@@ -234,15 +232,15 @@ export const useBonuses = ({
       }
 
       const filteredRemovedFigures = removedFigures.filter(
-        ({ figure }) => figure !== "teamCell" && figure !== "goldenCell"
+        ({ figure }) => figure.type !== "teamCell" && figure.type !== "goldenCell"
       );
 
       if (filteredRemovedFigures.length > 0) {
         setGoals((prev) => {
-          const figureCountMap = new Map<Figure, number>();
+          const figureCountMap = new Map<FigureType, number>();
 
           filteredRemovedFigures.forEach(({ figure }) => {
-            figureCountMap.set(figure, (figureCountMap.get(figure) || 0) + 1);
+            figureCountMap.set(figure.type, (figureCountMap.get(figure.type) || 0) + 1);
           });
 
           const next = prev.map((goal) => {

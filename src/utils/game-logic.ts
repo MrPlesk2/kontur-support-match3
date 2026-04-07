@@ -1,9 +1,34 @@
-import { Board, Figure, Level, Match, Position } from "types";
-import { BOARD_ROWS, BOARD_COLS, MIN_MATCH_LENGTH } from "consts";
-import { shuffleBoardWithoutMatches } from "@utils/board-utils";
-import { isTeamImage } from "@utils/game-utils";
+import {
+  Board,
+  Figure,
+  FigureType,
+  Level,
+  Match,
+  Position,
+  createFigure,
+} from "types";
+import { BOARD_ROWS, BOARD_COLS } from "consts";
+import {
+  applyGravity,
+  findAllMatches,
+  getUniquePositions,
+  isBigFigure,
+  isSpecialFigure,
+  isTeamImage,
+  isValidPosition,
+  updateBoardAfterMatches,
+} from "@utils/game-utils";
 
-export { shuffleBoardWithoutMatches };
+export {
+  applyGravity,
+  findAllMatches,
+  getUniquePositions,
+  isBigFigure,
+  isSpecialFigure,
+  isTeamImage,
+  isValidPosition,
+  updateBoardAfterMatches,
+};
 
 const normalizeBoard = (inputBoard: Board): Board => {
   const normalized: Board = [];
@@ -22,7 +47,7 @@ const normalizeBoard = (inputBoard: Board): Board => {
   return normalized;
 };
 
-const SPECIAL_FIGURES: Figure[] = [
+const SPECIAL_FIGURES: FigureType[] = [
   "goldenCell",
   "star",
   "diamond",
@@ -34,10 +59,13 @@ const SPECIAL_FIGURES: Figure[] = [
   "team",
 ];
 
-const isSpecialFigure = (figure: Figure | null): boolean => {
+const isFixedFigure = (figure: Figure | null): boolean => {
   if (!figure) return false;
-  return SPECIAL_FIGURES.includes(figure);
+  return SPECIAL_FIGURES.includes(figure.type);
 };
+
+const makeStableFigure = (type: FigureType, row: number, col: number) =>
+  createFigure(type, `${type}-${row}-${col}`);
 
 export const createInitialBoard = (level?: Level): Board => {
   const availableFigures = level?.availableFigures || [
@@ -49,7 +77,7 @@ export const createInitialBoard = (level?: Level): Board => {
   ];
 
   const normalizedFigures = availableFigures.filter(
-    (fig) => !isSpecialFigure(fig)
+    (fig) => !SPECIAL_FIGURES.includes(fig)
   );
 
   const generateBoard = (): Board => {
@@ -60,7 +88,11 @@ export const createInitialBoard = (level?: Level): Board => {
     if (level?.starPositions) {
       level.starPositions.forEach((position: Position) => {
         if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
-          board[position.row][position.col] = "star";
+          board[position.row][position.col] = makeStableFigure(
+            "star",
+            position.row,
+            position.col
+          );
         }
       });
     }
@@ -68,7 +100,11 @@ export const createInitialBoard = (level?: Level): Board => {
     if (level?.diamondPositions) {
       level.diamondPositions.forEach((position: Position) => {
         if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
-          board[position.row][position.col] = "diamond";
+          board[position.row][position.col] = makeStableFigure(
+            "diamond",
+            position.row,
+            position.col
+          );
         }
       });
     }
@@ -76,7 +112,11 @@ export const createInitialBoard = (level?: Level): Board => {
     if (level?.teamPositions) {
       level.teamPositions.forEach((position: Position) => {
         if (position.row < BOARD_ROWS && position.col < BOARD_COLS) {
-          board[position.row][position.col] = "team";
+          board[position.row][position.col] = makeStableFigure(
+            "team",
+            position.row,
+            position.col
+          );
         }
       });
     }
@@ -87,7 +127,11 @@ export const createInitialBoard = (level?: Level): Board => {
         level.teamImagePosition.col < BOARD_COLS
       ) {
         board[level.teamImagePosition.row][level.teamImagePosition.col] =
-          "teamImage0";
+          makeStableFigure(
+            "teamImage0",
+            level.teamImagePosition.row,
+            level.teamImagePosition.col
+          );
       }
     }
 
@@ -95,7 +139,7 @@ export const createInitialBoard = (level?: Level): Board => {
       for (let col = 0; col < BOARD_COLS; col++) {
         if (board[row][col] !== null) continue;
 
-        let chosen: Figure | null = null;
+        let chosen: FigureType | null = null;
         const candidates = [...normalizedFigures];
         let safety = 0;
 
@@ -106,13 +150,13 @@ export const createInitialBoard = (level?: Level): Board => {
 
           const horizontalMatch =
             col >= 2 &&
-            board[row][col - 1] === candidate &&
-            board[row][col - 2] === candidate;
+            board[row][col - 1]?.type === candidate &&
+            board[row][col - 2]?.type === candidate;
 
           const verticalMatch =
             row >= 2 &&
-            board[row - 1][col] === candidate &&
-            board[row - 2][col] === candidate;
+            board[row - 1][col]?.type === candidate &&
+            board[row - 2][col]?.type === candidate;
 
           if (!horizontalMatch && !verticalMatch) {
             chosen = candidate;
@@ -122,9 +166,11 @@ export const createInitialBoard = (level?: Level): Board => {
           candidates.splice(index, 1);
         }
 
-        board[row][col] =
-          chosen ||
-          normalizedFigures[Math.floor(Math.random() * normalizedFigures.length)];
+        board[row][col] = chosen
+          ? createFigure(chosen)
+          : createFigure(
+              normalizedFigures[Math.floor(Math.random() * normalizedFigures.length)]
+            );
       }
     }
 
@@ -152,6 +198,111 @@ export const createInitialBoard = (level?: Level): Board => {
   return normalizeBoard(newBoard);
 };
 
+export const fillEmptySlots = (board: Board, level?: Level): Board => {
+  const newBoard = normalizeBoard(board);
+
+  const availableFigures = level?.availableFigures || [
+    "pencil",
+    "questionBook",
+    "openBook",
+    "briefcase",
+    "bonnet",
+  ];
+
+  const figuresWithoutSpecials = availableFigures.filter(
+    (fig) =>
+      fig !== "star" &&
+      fig !== "diamond" &&
+      fig !== "team" &&
+      !isTeamImage(fig)
+  );
+
+  for (let col = 0; col < BOARD_COLS; col++) {
+    if (newBoard[0][col] === null) {
+      const randomFigure =
+        figuresWithoutSpecials[
+          Math.floor(Math.random() * figuresWithoutSpecials.length)
+        ];
+      newBoard[0][col] = createFigure(randomFigure);
+    }
+  }
+
+  return normalizeBoard(newBoard);
+};
+
+export const applyHorizontalGravity = (
+  board: Board
+): { board: Board; isChanged: boolean } => {
+  const newBoard: Board = normalizeBoard(board).map((row) => [...row]);
+  let isChanged = false;
+
+  const TARGET_LEFT = 2;
+  const TARGET_RIGHT = 3;
+  const ROWS_TO_PROCESS = [BOARD_ROWS - 1, BOARD_ROWS - 2];
+
+  for (const rowIndex of ROWS_TO_PROCESS) {
+    if (rowIndex < 0 || rowIndex >= BOARD_ROWS) continue;
+
+    const row = [...newBoard[rowIndex]];
+    const cellsInvolved = new Set<number>();
+
+    type Move = { from: number; to: number; figure: Figure };
+    const moves: Move[] = [];
+
+    for (let col = TARGET_RIGHT + 1; col < BOARD_COLS - 1; col++) {
+      const cell = row[col];
+      if (
+        !cell ||
+        cell.type === "teamCell" ||
+        cell.type === "team" ||
+        cell.type === "goldenCell" ||
+        isTeamImage(cell)
+      ) {
+        continue;
+      }
+
+      const targetCol = col - 1;
+      if (!row[targetCol] && !cellsInvolved.has(col) && !cellsInvolved.has(targetCol)) {
+        moves.push({ from: col, to: targetCol, figure: cell });
+      }
+    }
+
+    for (let col = TARGET_LEFT - 1; col >= 1; col--) {
+      const cell = row[col];
+      if (
+        !cell ||
+        cell.type === "teamCell" ||
+        cell.type === "team" ||
+        cell.type === "goldenCell" ||
+        isTeamImage(cell)
+      ) {
+        continue;
+      }
+
+      const targetCol = col + 1;
+      if (!row[targetCol] && !cellsInvolved.has(col) && !cellsInvolved.has(targetCol)) {
+        moves.push({ from: col, to: targetCol, figure: cell });
+      }
+    }
+
+    for (const move of moves) {
+      if (cellsInvolved.has(move.from) || cellsInvolved.has(move.to)) continue;
+      if (row[move.to] !== null) continue;
+
+      row[move.to] = move.figure;
+      row[move.from] = null;
+
+      cellsInvolved.add(move.from);
+      cellsInvolved.add(move.to);
+      isChanged = true;
+    }
+
+    newBoard[rowIndex] = row;
+  }
+
+  return { board: normalizeBoard(newBoard), isChanged };
+};
+
 export const applyGravityFillLoop = (inputBoard: Board, level?: Level): Board => {
   let board = normalizeBoard(inputBoard);
   let iterations = 0;
@@ -167,6 +318,110 @@ export const applyGravityFillLoop = (inputBoard: Board, level?: Level): Board =>
   }
 
   return normalizeBoard(board);
+};
+
+export const hasPossibleMoves = (board: Board): boolean => {
+  const safeBoard = normalizeBoard(board);
+  const rows = safeBoard.length;
+  const cols = safeBoard[0].length;
+
+  const UNMOVABLE_FIGURES: FigureType[] = [
+    "team",
+    "teamImage0",
+    "teamImage1",
+    "teamImage2",
+    "teamImage3",
+    "goldenCell",
+  ];
+
+  const canSwapFigure = (figure: Figure | null): boolean => {
+    if (!figure) return false;
+    if (UNMOVABLE_FIGURES.includes(figure.type)) return false;
+    return true;
+  };
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const currentFigure = safeBoard[row][col];
+      if (!canSwapFigure(currentFigure)) continue;
+
+      if (col < cols - 1) {
+        const rightFigure = safeBoard[row][col + 1];
+        if (canSwapFigure(rightFigure)) {
+          if (currentFigure?.type === "star" && rightFigure?.type === "star") continue;
+          if (currentFigure?.type === "diamond" && rightFigure?.type === "diamond") continue;
+
+          const tempBoard = safeBoard.map((r) => [...r]);
+          tempBoard[row][col] = rightFigure;
+          tempBoard[row][col + 1] = currentFigure;
+
+          if (findAllMatches(tempBoard).length > 0) return true;
+        }
+      }
+
+      if (row < rows - 1) {
+        const bottomFigure = safeBoard[row + 1][col];
+        if (canSwapFigure(bottomFigure)) {
+          if (currentFigure?.type === "star" && bottomFigure?.type === "star") continue;
+          if (currentFigure?.type === "diamond" && bottomFigure?.type === "diamond") continue;
+
+          const tempBoard = safeBoard.map((r) => [...r]);
+          tempBoard[row][col] = bottomFigure;
+          tempBoard[row + 1][col] = currentFigure;
+
+          if (findAllMatches(tempBoard).length > 0) return true;
+        }
+      }
+    }
+  }
+
+  return false;
+};
+
+export const shuffleBoardWithoutMatches = (
+  board: Board,
+  level?: Level
+): Board => {
+  const safeBoard = normalizeBoard(board).map((row) => [...row]);
+
+  const movablePositions: Position[] = [];
+  const movableFigures: Figure[] = [];
+
+  for (let row = 0; row < BOARD_ROWS; row++) {
+    for (let col = 0; col < BOARD_COLS; col++) {
+      const cell = safeBoard[row][col];
+      if (!cell) continue;
+      if (isFixedFigure(cell)) continue;
+
+      movablePositions.push({ row, col });
+      movableFigures.push(cell);
+    }
+  }
+
+  if (movableFigures.length <= 1) {
+    return safeBoard;
+  }
+
+  const maxAttempts = 100;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const shuffled = [...movableFigures];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const nextBoard = normalizeBoard(safeBoard).map((row) => [...row]);
+    movablePositions.forEach((pos, index) => {
+      nextBoard[pos.row][pos.col] = shuffled[index];
+    });
+
+    if (findAllMatches(nextBoard).length === 0) {
+      return nextBoard;
+    }
+  }
+
+  return safeBoard;
 };
 
 export const willCreateMatch = (
@@ -186,333 +441,4 @@ export const willCreateMatch = (
   testBoard[pos2.row][pos2.col] = temp;
 
   return findAllMatches(testBoard).length > 0;
-};
-
-export const findAllMatches = (board: Board): Match[] => {
-  const safeBoard = normalizeBoard(board);
-  const matches: Match[] = [];
-
-  for (let row = 0; row < BOARD_ROWS; row++) {
-    let col = 0;
-
-    while (col < BOARD_COLS - 2) {
-      const figure = safeBoard[row][col];
-
-      if (
-        !figure ||
-        figure === "star" ||
-        figure === "diamond" ||
-        figure === "team" ||
-        isTeamImage(figure)
-      ) {
-        col++;
-        continue;
-      }
-
-      let matchLength = 1;
-      while (
-        col + matchLength < BOARD_COLS &&
-        safeBoard[row][col + matchLength] === figure
-      ) {
-        matchLength++;
-      }
-
-      if (matchLength >= MIN_MATCH_LENGTH) {
-        const positions: Position[] = [];
-        for (let i = 0; i < matchLength; i++) {
-          positions.push({ row, col: col + i });
-        }
-        matches.push({ positions, figure });
-        col += matchLength;
-      } else {
-        col++;
-      }
-    }
-  }
-
-  for (let col = 0; col < BOARD_COLS; col++) {
-    let row = 0;
-
-    while (row < BOARD_ROWS - 2) {
-      const figure = safeBoard[row][col];
-
-      if (
-        !figure ||
-        figure === "star" ||
-        figure === "diamond" ||
-        figure === "team" ||
-        isTeamImage(figure)
-      ) {
-        row++;
-        continue;
-      }
-
-      let matchLength = 1;
-      while (
-        row + matchLength < BOARD_ROWS &&
-        safeBoard[row + matchLength][col] === figure
-      ) {
-        matchLength++;
-      }
-
-      if (matchLength >= MIN_MATCH_LENGTH) {
-        const positions: Position[] = [];
-        for (let i = 0; i < matchLength; i++) {
-          positions.push({ row: row + i, col });
-        }
-        matches.push({ positions, figure });
-        row += matchLength;
-      } else {
-        row++;
-      }
-    }
-  }
-
-  return matches;
-};
-
-export const updateBoardAfterMatches = (board: Board): Board => {
-  const newBoard = normalizeBoard(board).map((row) => [...row]);
-  const matches = findAllMatches(newBoard);
-
-  matches.forEach((match) => {
-    match.positions.forEach(({ row, col }) => {
-      const figure = newBoard[row][col];
-      if (figure !== "teamCell") {
-        newBoard[row][col] = null;
-      }
-    });
-  });
-
-  return normalizeBoard(newBoard);
-};
-
-export const applyGravity = (board: Board): Board => {
-  const newBoard = normalizeBoard(board).map((row) => [...row]);
-
-  for (let col = 0; col < BOARD_COLS; col++) {
-    for (let row = BOARD_ROWS - 2; row >= 0; row--) {
-      const current = newBoard[row][col];
-      const below = newBoard[row + 1][col];
-
-      if (
-        current !== null &&
-        current !== "team" &&
-        !isTeamImage(current) &&
-        below === null
-      ) {
-        newBoard[row + 1][col] = current;
-        newBoard[row][col] = null;
-      }
-    }
-  }
-
-  return normalizeBoard(newBoard);
-};
-
-export const fillEmptySlots = (board: Board, level?: Level): Board => {
-  const newBoard = normalizeBoard(board);
-
-  const availableFigures = level?.availableFigures || [
-    "pencil",
-    "questionBook",
-    "openBook",
-    "briefcase",
-    "bonnet",
-  ];
-
-  const figuresWithoutStarsAndDiamondsAndTeam = availableFigures.filter(
-    (fig) => fig !== "star" && fig !== "diamond" && fig !== "team" && !isTeamImage(fig)
-  );
-
-  for (let col = 0; col < BOARD_COLS; col++) {
-    if (newBoard[0][col] === null) {
-      const randomFigure =
-        figuresWithoutStarsAndDiamondsAndTeam[
-          Math.floor(Math.random() * figuresWithoutStarsAndDiamondsAndTeam.length)
-        ];
-      newBoard[0][col] = randomFigure;
-    }
-  }
-
-  return normalizeBoard(newBoard);
-};
-
-// ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ: горизонтальная гравитация с предотвращением конфликтов
-// Только уровень 5, только 2 нижних ряда, 1 клетка за вызов
-export const applyHorizontalGravity = (
-  board: Board
-): { board: Board; isChanged: boolean } => {
-  const newBoard: Board = normalizeBoard(board).map((row) => [...row]);
-  let isChanged = false;
-
-  // ⚙️ Настройки: только уровень 5, только 2 нижних ряда
-  const TARGET_LEFT = 2;      // Левая целевая колонка
-  const TARGET_RIGHT = 3;     // Правая целевая колонка
-  const ROWS_TO_PROCESS = [BOARD_ROWS - 1, BOARD_ROWS - 2]; // Только 2 нижних ряда
-
-  for (const rowIndex of ROWS_TO_PROCESS) {
-    if (rowIndex < 0 || rowIndex >= BOARD_ROWS) continue;
-
-    // Работаем с копией строки для безопасного чтения/записи
-    const row = [...newBoard[rowIndex]];
-
-    // 🛡️ Отслеживаем ячейки, участвующие в перемещениях (и источник, и цель)
-    // Это предотвращает конфликты: две фигуры не попадут в одну клетку
-    const cellsInvolved = new Set<number>();
-
-    // === ФАЗА 1: Сбор всех валидных потенциальных перемещений ===
-    type Move = { from: number; to: number; figure: Figure };
-    const moves: Move[] = [];
-
-    // ➡️ ПРАВАЯ СТОРОНА: фигуры двигаются ВЛЕВО к TARGET_RIGHT
-    // Обрабатываем слева направо для консистентности
-    for (let col = TARGET_RIGHT + 1; col < BOARD_COLS-1; col++) {
-      const cell = row[col];
-      
-      // Пропускаем пустые и нефизические фигуры
-      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
-      
-      const targetCol = col - 1;
-      
-      // Можно двигать, если:
-      // 1. Целевая ячейка пуста
-      // 2. Ни исходная, ни целевая ячейка не задействованы в другом перемещении
-      if (
-        !row[targetCol] && 
-        !cellsInvolved.has(col) && 
-        !cellsInvolved.has(targetCol)
-      ) {
-        moves.push({ from: col, to: targetCol, figure: cell });
-      }
-    }
-
-    // ⬅️ ЛЕВАЯ СТОРОНА: фигуры двигаются ВПРАВО к TARGET_LEFT
-    // Обрабатываем справа налево для консистентности
-    for (let col = TARGET_LEFT - 1; col >= 1; col--) {
-      const cell = row[col];
-      
-      if (!cell || cell === "teamCell" || cell === "team" || isTeamImage(cell)) continue;
-      
-      const targetCol = col + 1;
-      
-      if (
-        !row[targetCol] && 
-        !cellsInvolved.has(col) && 
-        !cellsInvolved.has(targetCol)
-      ) {
-        moves.push({ from: col, to: targetCol, figure: cell });
-      }
-    }
-
-    // === ФАЗА 2: Выполнение перемещений с финальной проверкой конфликтов ===
-    for (const move of moves) {
-      // Финальная проверка: условия могли измениться после предыдущих перемещений
-      if (cellsInvolved.has(move.from) || cellsInvolved.has(move.to)) continue;
-      if (row[move.to] !== null) continue;
-
-      // ✅ Выполняем перемещение: фигура сдвигается ровно на 1 клетку
-      row[move.to] = move.figure;
-      row[move.from] = null;
-      
-      // Помечаем ячейки как задействованные
-      cellsInvolved.add(move.from);
-      cellsInvolved.add(move.to);
-      isChanged = true;
-      
-      // 🔁 Не делаем break — разрешаем параллельные неконфликтующие перемещения
-      // (как в applyGravity: несколько фигур могут падать одновременно)
-    }
-
-    newBoard[rowIndex] = row;
-  }
-
-  return { board: normalizeBoard(newBoard), isChanged };
-};
-
-export const hasPossibleMoves = (board: Board): boolean => {
-  const safeBoard = normalizeBoard(board);
-  const rows = safeBoard.length;
-  const cols = safeBoard[0].length;
-
-  const UNMOVABLE_FIGURES: Figure[] = [
-    "team",
-    "teamImage0",
-    "teamImage1",
-    "teamImage2",
-    "teamImage3",
-  ];
-
-  const canSwapFigure = (figure: Figure | null): boolean => {
-    if (!figure) return false;
-    if (UNMOVABLE_FIGURES.includes(figure)) return false;
-    return true;
-  };
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const currentFigure = safeBoard[row][col];
-      if (!canSwapFigure(currentFigure)) continue;
-
-      if (col < cols - 1) {
-        const rightFigure = safeBoard[row][col + 1];
-        if (canSwapFigure(rightFigure)) {
-          if (currentFigure === "star" && rightFigure === "star") continue;
-          if (currentFigure === "diamond" && rightFigure === "diamond") continue;
-
-          const tempBoard = safeBoard.map((r) => [...r]);
-          tempBoard[row][col] = rightFigure;
-          tempBoard[row][col + 1] = currentFigure;
-
-          if (findAllMatches(tempBoard).length > 0) {
-            return true;
-          }
-        }
-      }
-
-      if (row < rows - 1) {
-        const bottomFigure = safeBoard[row + 1][col];
-        if (canSwapFigure(bottomFigure)) {
-          if (currentFigure === "star" && bottomFigure === "star") continue;
-          if (currentFigure === "diamond" && bottomFigure === "diamond") continue;
-
-          const tempBoard = safeBoard.map((r) => [...r]);
-          tempBoard[row][col] = bottomFigure;
-          tempBoard[row + 1][col] = currentFigure;
-
-          if (findAllMatches(tempBoard).length > 0) {
-            return true;
-          }
-        }
-      }
-    }
-  }
-
-  return false;
-};
-
-export const isValidPosition = (position: Position): boolean => {
-  return (
-    position.row >= 0 &&
-    position.row < BOARD_ROWS &&
-    position.col >= 0 &&
-    position.col < BOARD_COLS
-  );
-};
-
-export const getUniquePositions = (matches: Match[]): Position[] => {
-  const uniquePositions = new Set<string>();
-  const positions: Position[] = [];
-
-  matches.forEach((match) => {
-    match.positions.forEach((position) => {
-      const key = `${position.row}-${position.col}`;
-      if (!uniquePositions.has(key)) {
-        uniquePositions.add(key);
-        positions.push(position);
-      }
-    });
-  });
-
-  return positions;
 };
