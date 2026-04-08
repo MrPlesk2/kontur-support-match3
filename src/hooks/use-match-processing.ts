@@ -14,7 +14,7 @@ import {
   FigureType,
   createFigure,
 } from "types";
-import { ANIMATION_DURATION, BOARD_ROWS } from "consts";
+import { ANIMATION_DURATION, BOARD_ROWS, SOUND_PATHS } from "consts";
 import {
   findAllMatches,
   updateBoardAfterMatches,
@@ -124,6 +124,18 @@ export const useMatchProcessing = ({
     },
     []
   );
+
+  const playRandomMatch3Sound = useCallback(() => {
+    const sounds = SOUND_PATHS.match3;
+    if (!sounds.length) return;
+
+    const sound = sounds[Math.floor(Math.random() * sounds.length)];
+    const audio = new Audio(sound);
+    audio.volume = 0.6;
+    audio.play().catch(() => {
+      // autoplay может быть заблокирован браузером
+    });
+  }, []);
 
   const replaceCompletedGoalsForLevel6 = useCallback(
     (goals: Goal[]): { goals: Goal[]; bonuses: BonusType[] } => {
@@ -297,6 +309,14 @@ export const useMatchProcessing = ({
           const foundMatches = findAllMatches(boardToProcess);
 
           if (foundMatches.length > 0) {
+            const hasMatchOfThree = foundMatches.some(
+              (match) => match.positions.length === 3
+            );
+
+            if (hasMatchOfThree) {
+              playRandomMatch3Sound();
+            }
+
             const goldenCellsInMatchesSet = new Set<string>();
             let collectedTeamMatches = 0;
 
@@ -749,6 +769,7 @@ export const useMatchProcessing = ({
       getRandomFigure,
       replaceCompletedGoalsForLevel6,
       checkPossibleMoves,
+      playRandomMatch3Sound,
     ]
   );
 
