@@ -48,11 +48,6 @@ type UseMatchProcessingProps = {
   onGoalCollected?: (position: Position, figureType: FigureType, goalIndex: number) => void;
 };
 
-const DEBUG_MATCH_PROCESSING = true;
-const log = (...args: any[]) => {
-  if (DEBUG_MATCH_PROCESSING) console.log(...args);
-};
-
 const normalizeBoard = (inputBoard: Board): Board => {
   const rows = inputBoard.length;
   const cols = inputBoard[0]?.length ?? 0;
@@ -313,13 +308,7 @@ export const useMatchProcessing = ({
           const foundMatches = findAllMatches(boardToProcess);
 
           if (foundMatches.length > 0) {
-            const hasMatchOfThree = foundMatches.some(
-              (match) => match.positions.length === 3
-            );
-
-            if (hasMatchOfThree) {
-              playRandomMatch3Sound();
-            }
+            playRandomMatch3Sound();
 
             const goldenCellsInMatchesSet = new Set<string>();
             let teamPositions: Position[] = [];
