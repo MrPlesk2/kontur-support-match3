@@ -11,7 +11,8 @@ export const LEVELS: Level[] = [
       { figure: "briefcase", target: 13, collected: 0 },
     ],
     bonuses: [
-      { type: "remoteWork", count: 3 },
+      { type: "openGuide", count: 122 },
+      //{ type: "remoteWork", count: 3 },
       { type: "itSphere", count: 2 }
     ],
     moves: 21,
@@ -35,7 +36,8 @@ export const LEVELS: Level[] = [
       },
     ],
     bonuses: [
-      { type: "knowledgeBase", count: 2 },
+      { type: "openGuide", count: 122 },
+      //{ type: "knowledgeBase", count: 2 },
       { type: "friendlyTeam", count: 3 }
     ],
     moves: 22,
@@ -66,7 +68,8 @@ export const LEVELS: Level[] = [
       { figure: "star", target: 5, collected: 0 },
     ],
     bonuses: [
-      { type: "dms", count: 2 },
+      { type: "openGuide", count: 122 },
+      //{ type: "dms", count: 2 },
       { type: "sportCompensation", count: 3 }
     ],
     moves: 23,
@@ -119,12 +122,12 @@ export const LEVELS: Level[] = [
   },
   {
     id: 5,
-    name: "Тимлид",
-    description: "Тимлиду не нужно самому общаться с клиентами. Его задача помогать им работать лучше и поддерживать по сложным вопросам от клиентов.",
+    name: "Руководитель группы",
+    description: "Руководителю группы не нужно самому общаться с клиентами. Его задача помогать им работать лучше и поддерживать по сложным вопросам от клиентов.",
     goals: [
       {
         figure: "teamCell",
-        target: 15,
+        target: 19,
         collected: 0,
       }
     ],
@@ -158,7 +161,7 @@ export const LEVELS: Level[] = [
   {
     id: 6,
     name: "Профессионал",
-    description: "Собирай фигуры по три в ряд и получай как можно больше очков! Достигай целей, чтобы получить случайные бонусы, и продолжай улучшать свой результат.",
+    description: "Ты узнал, какой путь можно пройти в клиентском сервисе. Уверены, ты точно справишься! Если хочешь продолжить игру, переходи в наш бесконечный уровень. Собирай фигуры по три в ряд и получи как можно больше очков. ",
     goals: [
       { figure: "roundMessage", target: 8, collected: 0 },
       { figure: "letter", target: 8, collected: 0 },

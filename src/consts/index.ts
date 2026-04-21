@@ -5,3 +5,4 @@ export * from "./game";
 export * from "./paths";
 export * from "./bonuses";
 export * from "./levels";
+export * from "./sounds";

@@ -1,8 +1,8 @@
-import { Board, Figure, Position, SpecialCell } from "types";
+import { Board, Figure, FigureType, Position, SpecialCell } from "types";
 import { BOARD_ROWS } from "consts";
 import { isTeamImage } from "@utils/game-utils";
 
-const forbidden = new Set<Figure>([
+const forbidden = new Set<FigureType>([
   "star",
   "diamond",
   "goldenCell",
@@ -12,11 +12,11 @@ const forbidden = new Set<Figure>([
   "teamImage1",
   "teamImage2",
   "teamImage3",
-] as Figure[]);
+]);
 
 const isRemovable = (f: Figure | null) => {
   if (!f) return false;
-  if (forbidden.has(f)) return false;
+  if (forbidden.has(f.type)) return false;
   if (isTeamImage(f)) return false;
   return true;
 };

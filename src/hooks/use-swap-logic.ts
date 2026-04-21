@@ -9,9 +9,12 @@ export const useSwapLogic = (
   setIsSwapping: (swapping: boolean) => void,
   setIsAnimating: (animating: boolean) => void,
   setBoard: (board: Board) => void,
-  processMatches: (board: Board, specialCells: SpecialCell[], options?: { skipGoldenRestore: boolean }) => Promise<Board>
+  processMatches: (
+    board: Board,
+    specialCells: SpecialCell[],
+    options?: { skipGoldenRestore: boolean }
+  ) => Promise<Board>
 ) => {
-  // Флаг для предотвращения двойных свапов на мобильных устройствах
   const isSwappingInProgress = useRef(false);
 
   const areAdjacent = useCallback((pos1: Position, pos2: Position): boolean => {
@@ -25,8 +28,8 @@ export const useSwapLogic = (
     const figure2 = board[pos2.row][pos2.col];
 
     if (
-      figure1 === "team" ||
-      figure2 === "team" ||
+      figure1?.type === "team" ||
+      figure2?.type === "team" ||
       isTeamImage(figure1) ||
       isTeamImage(figure2)
     ) {
@@ -44,9 +47,7 @@ export const useSwapLogic = (
       setMoves: (updater: (moves: number) => number) => void,
       specialCells: SpecialCell[]
     ): Promise<boolean> => {
-      // Защита от двойного вызова на мобильных устройствах
       if (isSwappingInProgress.current) {
-        console.warn('swapFigures: обмен уже выполняется, пропускаем');
         return false;
       }
 
@@ -56,7 +57,6 @@ export const useSwapLogic = (
       setIsSwapping(true);
       setIsAnimating(true);
 
-      // Проверка, можно ли свапать эти позиции
       if (!canSwap(board, pos1, pos2)) {
         setIsSwapping(false);
         setIsAnimating(false);
@@ -67,15 +67,13 @@ export const useSwapLogic = (
       const figure1 = board[pos1.row][pos1.col];
       const figure2 = board[pos2.row][pos2.col];
 
-      // Специальная проверка на звёзды
-      if (figure1 === "star" && figure2 === "star") {
+      if (figure1?.type === "star" && figure2?.type === "star") {
         setIsSwapping(false);
         setIsAnimating(false);
         isSwappingInProgress.current = false;
         return false;
       }
 
-      // Проверяем, создаст ли swap матч
       if (!willCreateMatch(board, pos1, pos2)) {
         setIsSwapping(false);
         setIsAnimating(false);
@@ -83,7 +81,6 @@ export const useSwapLogic = (
         return false;
       }
 
-      // Меняем фигуры
       const newBoard = board.map((row) => [...row]);
       const temp = newBoard[pos1.row][pos1.col];
       newBoard[pos1.row][pos1.col] = newBoard[pos2.row][pos2.col];
@@ -93,18 +90,11 @@ export const useSwapLogic = (
       await new Promise((resolve) => setTimeout(resolve, ANIMATION_DURATION));
       setIsSwapping(false);
 
-      // Вычитаем ТОЛЬКО ОДИН ход
-      setMoves((prevMoves) => {
-        // Дополнительная проверка на случай, если функция вызвалась дважды
-        if (prevMoves <= 0) return 0;
-        return prevMoves - 1;
-      });
+      setMoves((prevMoves) => (prevMoves <= 0 ? 0 : prevMoves - 1));
 
-      // Для обычных свапов передаем specialCells и флаг skipGoldenRestore: false
       await processMatches(newBoard, specialCells, { skipGoldenRestore: false });
       setIsAnimating(false);
 
-      // Сбрасываем флаг после завершения всего процесса
       isSwappingInProgress.current = false;
       return true;
     },

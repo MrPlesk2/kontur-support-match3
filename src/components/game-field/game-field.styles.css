@@ -1,18 +1,42 @@
 :root {
+  --cell-size: 50px;
   --cell-gap: 10px;
+  --field-padding: 24px;
+}
+
+.field-wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
 }
 
 .field {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  grid-template-columns: repeat(7, var(--cell-size));
+  grid-template-rows: repeat(6, var(--cell-size));
   gap: var(--cell-gap);
-  padding: 24px;
+  padding: var(--field-padding);
+
   background-color: #f6f6f6;
   border-radius: 24px;
-  width: fit-content;
-  margin: 0 auto;
   box-sizing: border-box;
-  height: 452px;
-  overflow: visible;
+
+  width: 458px;
+  height: 452px; /* 👈 вернуть */
+
+  /* 👇 ВАЖНО */
+  align-content: space-between;
+  justify-content: space-between;
+}
+
+
+
+.figure-overlay {
+  pointer-events: none;
+}
+
+.figure-overlay-img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
 }

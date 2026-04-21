@@ -1,7 +1,7 @@
+import { FigureType } from "./figure";
 import { Position } from "./position";
-import { Figure } from "./figure";
 
 export type Match = {
   positions: Position[];
-  figure: Figure;
+  figure: FigureType;
 };
