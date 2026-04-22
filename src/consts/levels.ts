@@ -6,13 +6,13 @@ export const LEVELS: Level[] = [
     name: "Новичок",
     description: "Сегодня твой первый день в команде поддержки. Твоя цель — накапливать знания по продуктам Контура, задавать вопросы наставнику и погружаться в жизнь компании. Удачи!",
     goals: [
-      { figure: "pencil", target: 13, collected: 0 },
-      { figure: "bonnet", target: 13, collected: 0 },
-      { figure: "briefcase", target: 13, collected: 0 },
+      { figure: "pencil", target: 10, collected: 0 },
+      { figure: "bonnet", target: 10, collected: 0 },
+      { figure: "briefcase", target: 10, collected: 0 },
     ],
     bonuses: [
-      { type: "openGuide", count: 122 },
-      //{ type: "remoteWork", count: 3 },
+      //{ type: "openGuide", count: 122 },
+      { type: "remoteWork", count: 3 },
       { type: "itSphere", count: 2 }
     ],
     moves: 21,
@@ -36,8 +36,8 @@ export const LEVELS: Level[] = [
       },
     ],
     bonuses: [
-      { type: "openGuide", count: 122 },
-      //{ type: "knowledgeBase", count: 2 },
+      //{ type: "openGuide", count: 122 },
+      { type: "knowledgeBase", count: 2 },
       { type: "friendlyTeam", count: 3 }
     ],
     moves: 22,
@@ -68,11 +68,11 @@ export const LEVELS: Level[] = [
       { figure: "star", target: 5, collected: 0 },
     ],
     bonuses: [
-      { type: "openGuide", count: 122 },
-      //{ type: "dms", count: 2 },
+      //{ type: "openGuide", count: 122 },
+      { type: "dms", count: 4 },
       { type: "sportCompensation", count: 3 }
     ],
-    moves: 23,
+    moves: 28,
     availableFigures: ["roundMessage", "letter", "smartphone", "rectangleMessage", "phone"],
     starPositions: [
       { row: 3, col: 1 },
@@ -95,10 +95,10 @@ export const LEVELS: Level[] = [
       }
     ],
     bonuses: [
-      { type: "modernProducts", count: 3 },
+      { type: "modernProducts", count: 4 },
       { type: "careerGrowth", count: 2 }
     ],
-    moves: 23,
+    moves: 28,
     availableFigures: ["roundMessage", "letter", "bulb", "rectangleMessage", "phone"],
     diamondPositions: [
       { row: 0, col: 1 },

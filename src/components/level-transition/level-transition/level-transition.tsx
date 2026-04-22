@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Bonus } from "types";
 import { LEVELS } from "consts/levels";
 import { getRandomBonusesForLevel6 } from "@utils/bonus-utils";
@@ -11,73 +11,107 @@ import { Button } from "@components/button/button";
 type LevelTransitionProps = {
   currentLevel: number;
   onLevelStart: (nextLevel: number, selectedBonuses: Bonus[]) => void;
+  promotionLink?: string;
+  promotionLinkText?: string;
+  hideAlternateLevelButton?: boolean;
+};
+
+const getBonusesForLevel = (levelId: number): Bonus[] => {
+  if (levelId === 6) {
+    return getRandomBonusesForLevel6();
+  }
+
+  return LEVELS.find((level) => level.id === levelId)?.bonuses ?? [];
 };
 
 export const LevelTransition = ({
   currentLevel,
   onLevelStart,
+  promotionLink,
+  promotionLinkText = "Узнать о карьере в поддержке",
+  hideAlternateLevelButton = false,
 }: LevelTransitionProps) => {
-  const [selectedLevel, setselectedLevel] = useState(NaN);
+  const [selectedLevel, setSelectedLevel] = useState<number>(NaN);
   const [bonusesForNextLevel, setBonusesForNextLevel] = useState<Bonus[]>([]);
   const [showChoiceLevel, setShowChoiceLevel] = useState(false);
 
-  // Определяем следующий уровень
+  const isChoiceLevel = currentLevel === 3;
+
   let nextLevel = currentLevel + 1;
-  
-  // Обрабатываем специальные случаи (уровень 3 и выбор пути)
-  if (currentLevel === 3 && selectedLevel) {
+
+  if (isChoiceLevel && !Number.isNaN(selectedLevel)) {
     nextLevel = selectedLevel;
   } else if (currentLevel === 4) {
     nextLevel += 1;
   }
-  
+
   const nextLevelInfo = LEVELS.find((level) => level.id === nextLevel);
 
-  // Эффект для сброса выбора при провале уровня 3
+  const alternateLevel = currentLevel === 4 ? 5 : currentLevel === 5 ? 4 : null;
+
+  const alternateLevelInfo =
+    alternateLevel !== null
+      ? LEVELS.find((level) => level.id === alternateLevel)
+      : null;
+
   useEffect(() => {
-    if (currentLevel === 3) {
-      setselectedLevel(NaN);
+    if (isChoiceLevel) {
+      setSelectedLevel(NaN);
       setShowChoiceLevel(true);
     } else {
       setShowChoiceLevel(false);
     }
-  }, [currentLevel]);
+  }, [isChoiceLevel]);
 
-  // Генерируем бонусы для следующего уровня (особенно для 6 уровня)
   useEffect(() => {
-    if (nextLevelInfo) {
-      if (nextLevel === 6) {
-        // Для 6 уровня генерируем случайные бонусы
-        const randomBonuses = getRandomBonusesForLevel6();
-        setBonusesForNextLevel(randomBonuses);
-      } else {
-        // Для остальных уровней используем бонусы из конфига
-        setBonusesForNextLevel(nextLevelInfo.bonuses);
-      }
+    if (!nextLevelInfo) {
+      setBonusesForNextLevel([]);
+      return;
+    }
+
+    if (nextLevel === 6) {
+      setBonusesForNextLevel(getRandomBonusesForLevel6());
+    } else {
+      setBonusesForNextLevel(nextLevelInfo.bonuses);
     }
   }, [nextLevel, nextLevelInfo]);
 
   const handleChoiceConfirm = (choice: number) => {
-    setselectedLevel(choice);
+    setSelectedLevel(choice);
     setShowChoiceLevel(false);
   };
 
-  const handleStart = () => {
+  const handleStartMain = () => {
     if (nextLevelInfo) {
-      // Передаем сгенерированные бонусы (для уровня 6 - случайные)
       onLevelStart(nextLevel, bonusesForNextLevel);
     }
   };
 
-  // Если нужно показать выбор уровня (уровень 3 и выбор еще не сделан)
-  if (showChoiceLevel && currentLevel === 3) {
+  const handleStartAlternate = () => {
+    if (!alternateLevelInfo || alternateLevel === null) {
+      return;
+    }
+
+    onLevelStart(alternateLevel, getBonusesForLevel(alternateLevel));
+  };
+
+  if (showChoiceLevel && isChoiceLevel) {
     return <ChoiceLevel onChoiceConfirm={handleChoiceConfirm} />;
   }
 
-  // Если следующий уровень не найден, не рендерим ничего
   if (!nextLevelInfo) {
     return null;
   }
+
+  const shouldShowPromotionLink = Boolean(promotionLink) && nextLevel >= 2;
+
+  const shouldShowAlternateButton =
+    (currentLevel === 4 || currentLevel === 5) && !hideAlternateLevelButton;
+
+  const alternateButtonText =
+    currentLevel === 4
+      ? "Пройти уровень Эксперт"
+      : "Пройти уровень Руководитель группы";
 
   return (
     <div className="lt-overlay">
@@ -87,8 +121,31 @@ export const LevelTransition = ({
           levelDescription={nextLevelInfo.description}
           isFirstLevel={currentLevel === 0}
         />
+
         <BonusSelectionCard availableBonuses={bonusesForNextLevel} />
-        <Button text={currentLevel === 0 ? 'Начать игру' : 'Продолжить игру'} onClick={handleStart} />
+
+        <div className="lt-actions">
+          <Button
+            text={currentLevel === 0 ? "Начать игру" : "Продолжить игру"}
+            onClick={handleStartMain}
+          />
+
+          {shouldShowAlternateButton && (
+            <Button text={alternateButtonText} onClick={handleStartAlternate} />
+          )}
+
+          {shouldShowPromotionLink && (
+            <a
+              className="lt-link-button lt-link-button--small"
+              href={promotionLink}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {promotionLinkText}
+            </a>
+
+          )}
+        </div>
       </div>
     </div>
   );
