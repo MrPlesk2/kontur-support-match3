@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Bonus } from "types";
 import { LEVELS } from "consts/levels";
 import { getRandomBonusesForLevel6 } from "@utils/bonus-utils";
@@ -13,6 +13,15 @@ type LevelTransitionProps = {
   onLevelStart: (nextLevel: number, selectedBonuses: Bonus[]) => void;
   promotionLink?: string;
   promotionLinkText?: string;
+  hideAlternateLevelButton?: boolean;
+};
+
+const getBonusesForLevel = (levelId: number): Bonus[] => {
+  if (levelId === 6) {
+    return getRandomBonusesForLevel6();
+  }
+
+  return LEVELS.find((level) => level.id === levelId)?.bonuses ?? [];
 };
 
 export const LevelTransition = ({
@@ -20,14 +29,17 @@ export const LevelTransition = ({
   onLevelStart,
   promotionLink,
   promotionLinkText = "Узнать о карьере в поддержке",
+  hideAlternateLevelButton = false,
 }: LevelTransitionProps) => {
-  const [selectedLevel, setSelectedLevel] = useState(NaN);
+  const [selectedLevel, setSelectedLevel] = useState<number>(NaN);
   const [bonusesForNextLevel, setBonusesForNextLevel] = useState<Bonus[]>([]);
   const [showChoiceLevel, setShowChoiceLevel] = useState(false);
 
+  const isChoiceLevel = currentLevel === 3;
+
   let nextLevel = currentLevel + 1;
 
-  if (currentLevel === 3 && selectedLevel) {
+  if (isChoiceLevel && !Number.isNaN(selectedLevel)) {
     nextLevel = selectedLevel;
   } else if (currentLevel === 4) {
     nextLevel += 1;
@@ -35,23 +47,32 @@ export const LevelTransition = ({
 
   const nextLevelInfo = LEVELS.find((level) => level.id === nextLevel);
 
+  const alternateLevel = currentLevel === 4 ? 5 : currentLevel === 5 ? 4 : null;
+
+  const alternateLevelInfo =
+    alternateLevel !== null
+      ? LEVELS.find((level) => level.id === alternateLevel)
+      : null;
+
   useEffect(() => {
-    if (currentLevel === 3) {
+    if (isChoiceLevel) {
       setSelectedLevel(NaN);
       setShowChoiceLevel(true);
     } else {
       setShowChoiceLevel(false);
     }
-  }, [currentLevel]);
+  }, [isChoiceLevel]);
 
   useEffect(() => {
-    if (nextLevelInfo) {
-      if (nextLevel === 6) {
-        const randomBonuses = getRandomBonusesForLevel6();
-        setBonusesForNextLevel(randomBonuses);
-      } else {
-        setBonusesForNextLevel(nextLevelInfo.bonuses);
-      }
+    if (!nextLevelInfo) {
+      setBonusesForNextLevel([]);
+      return;
+    }
+
+    if (nextLevel === 6) {
+      setBonusesForNextLevel(getRandomBonusesForLevel6());
+    } else {
+      setBonusesForNextLevel(nextLevelInfo.bonuses);
     }
   }, [nextLevel, nextLevelInfo]);
 
@@ -60,13 +81,21 @@ export const LevelTransition = ({
     setShowChoiceLevel(false);
   };
 
-  const handleStart = () => {
+  const handleStartMain = () => {
     if (nextLevelInfo) {
       onLevelStart(nextLevel, bonusesForNextLevel);
     }
   };
 
-  if (showChoiceLevel && currentLevel === 3) {
+  const handleStartAlternate = () => {
+    if (!alternateLevelInfo || alternateLevel === null) {
+      return;
+    }
+
+    onLevelStart(alternateLevel, getBonusesForLevel(alternateLevel));
+  };
+
+  if (showChoiceLevel && isChoiceLevel) {
     return <ChoiceLevel onChoiceConfirm={handleChoiceConfirm} />;
   }
 
@@ -75,6 +104,14 @@ export const LevelTransition = ({
   }
 
   const shouldShowPromotionLink = Boolean(promotionLink) && nextLevel >= 2;
+
+  const shouldShowAlternateButton =
+    (currentLevel === 4 || currentLevel === 5) && !hideAlternateLevelButton;
+
+  const alternateButtonText =
+    currentLevel === 4
+      ? "Пройти уровень Эксперт"
+      : "Пройти уровень Руководитель группы";
 
   return (
     <div className="lt-overlay">
@@ -90,13 +127,23 @@ export const LevelTransition = ({
         <div className="lt-actions">
           <Button
             text={currentLevel === 0 ? "Начать игру" : "Продолжить игру"}
-            onClick={handleStart}
+            onClick={handleStartMain}
           />
 
+          {shouldShowAlternateButton && (
+            <Button text={alternateButtonText} onClick={handleStartAlternate} />
+          )}
+
           {shouldShowPromotionLink && (
-            <a className="lt-link-button lt-link-button--small" href={promotionLink}>
+            <a
+              className="lt-link-button lt-link-button--small"
+              href={promotionLink}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
               {promotionLinkText}
             </a>
+
           )}
         </div>
       </div>

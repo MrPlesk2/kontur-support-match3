@@ -69,8 +69,8 @@ export const LEVELS: Level[] = [
     ],
     bonuses: [
       { type: "openGuide", count: 122 },
-      { type: "dms", count: 4 },
-      //{ type: "sportCompensation", count: 3 }
+      //{ type: "dms", count: 4 },
+      { type: "sportCompensation", count: 3 }
     ],
     moves: 28,
     availableFigures: ["roundMessage", "letter", "smartphone", "rectangleMessage", "phone"],
@@ -132,7 +132,7 @@ export const LEVELS: Level[] = [
       }
     ],
     bonuses: [
-      { type: "openGuide", count: 2 },
+      { type: "openGuide", count: 12 },
       { type: "careerGrowth", count: 1 }
     ],
     moves: 23,

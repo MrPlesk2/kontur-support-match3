@@ -27,7 +27,7 @@
   flex-direction: column;
   gap: 8px;
   margin-top: 8px;
-  align-items: center; /* важно для центрирования узкой кнопки */
+  align-items: center;
 }
 
 .lt-link-button {
@@ -44,12 +44,11 @@
   box-sizing: border-box;
 }
 
-/* 👇 вот тут делаем кнопку уже */
 .lt-link-button--small {
-  width: 70%;          /* ← уже основной */
-  min-height: 36px;
-  padding: 8px 12px;
-  font-size: 13px;
+  width: 64%;
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 12px;
 }
 
 .lt-link-button:hover {
