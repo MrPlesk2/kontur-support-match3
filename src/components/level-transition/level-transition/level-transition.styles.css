@@ -10,7 +10,7 @@
 }
 
 .lt-modal {
-  background: #F6F6F6;
+  background: #f6f6f6;
   border-radius: 24px;
   padding: clamp(8px, 3vw, 20px);
   width: min(475px, 95vw);
@@ -20,4 +20,42 @@
   flex-direction: column;
   overflow: hidden;
   margin: 0 auto;
+}
+
+.lt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center; /* важно для центрирования узкой кнопки */
+}
+
+.lt-link-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #d9d9d9;
+  color: #2f2f2f;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-sizing: border-box;
+}
+
+/* 👇 вот тут делаем кнопку уже */
+.lt-link-button--small {
+  width: 70%;          /* ← уже основной */
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.lt-link-button:hover {
+  background: #cfcfcf;
+}
+
+.lt-link-button:active {
+  transform: translateY(1px);
 }
