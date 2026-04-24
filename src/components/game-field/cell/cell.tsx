@@ -91,12 +91,14 @@ export const Cell: React.FC<CellProps> = ({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isBlocked) return;
+    e.preventDefault();
     e.currentTarget.setPointerCapture?.(e.pointerId);
     onDragStart(position);
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isBlocked) return;
+    e.preventDefault();
     if (e.pointerType === "mouse" && e.buttons === 0) return;
 
     const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
