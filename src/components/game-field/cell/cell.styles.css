@@ -12,6 +12,7 @@
   user-select: none;
   overflow: visible;
   position: relative;
+  touch-action: none;
 }
 
 .cell-content {

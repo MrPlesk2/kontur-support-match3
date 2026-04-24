@@ -29,11 +29,21 @@ export const Cell = ({
     onClick(position);
   };
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (event: React.MouseEvent) => {
+    event.preventDefault();
     onDragStart(position);
   };
 
   const handleMouseEnter = () => {
+    onDragOver(position);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent) => {
+    event.preventDefault();
+    onDragStart(position);
+  };
+
+  const handleTouchEnd = () => {
     onDragOver(position);
   };
 
@@ -55,6 +65,8 @@ export const Cell = ({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseEnter={handleMouseEnter}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="cell-content">
         {figure && (
