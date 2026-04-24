@@ -25,6 +25,7 @@
   overflow: hidden;
   align-content: start;
   justify-content: start;
+  touch-action: none;
 }
 
 .figure-overlay {
@@ -51,6 +52,7 @@
   overflow: visible;
   position: relative;
   z-index: 1;
+  touch-action: none;
 }
 
 .cell-content {
