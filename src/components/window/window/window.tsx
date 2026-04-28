@@ -1,5 +1,5 @@
-import { EndTransition } from './end-transition/end-transition';
-import { FailTransition } from './fail-transition/fail-transition';
+import { EndTransition } from '../end-transition/end-transition';
+import { FailTransition } from '../fail-transition/fail-transition';
 import './window.css'
 
 type WindowProps = {

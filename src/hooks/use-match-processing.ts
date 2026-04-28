@@ -125,7 +125,7 @@ export const useMatchProcessing = ({
   );
 
   const playRandomMatch3Sound = useCallback(() => {
-    const sounds = SOUND_PATHS.match3;
+    const sounds = SOUND_PATHS.sounds;
     if (!sounds.length) return;
 
     const sound = sounds[Math.floor(Math.random() * sounds.length)];
@@ -311,7 +311,7 @@ export const useMatchProcessing = ({
             playRandomMatch3Sound();
 
             const goldenCellsInMatchesSet = new Set<string>();
-            let teamPositions: Position[] = [];
+            const teamPositions: Position[] = [];
 
             foundMatches.forEach((match) => {
               let teamMatchFound = false;
@@ -656,7 +656,7 @@ export const useMatchProcessing = ({
 
                 if (toApply.length > 0) {
                   setBonuses((prevBonuses) => {
-                    let updatedBonuses = [...prevBonuses];
+                    const updatedBonuses = [...prevBonuses];
 
                     for (const bonusType of toApply) {
                       const existingIndex = updatedBonuses.findIndex(

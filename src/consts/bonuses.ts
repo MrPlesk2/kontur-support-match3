@@ -1,4 +1,4 @@
-import { BonusType } from "types/bonus-type";
+import { BonusType } from "types";
 import friendlyTeamImg from "@/assets/bonuses/friendlyTeam.svg";
 import careerGrowthImg from "@/assets/bonuses/careerGrowth.svg";
 import sportCompensationImg from "@/assets/bonuses/sportCompensation.svg";

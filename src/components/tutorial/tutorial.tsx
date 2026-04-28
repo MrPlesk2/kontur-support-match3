@@ -1,4 +1,3 @@
-// components/tutorial/tutorial.tsx
 import { useState, useEffect, useCallback } from 'react';
 import './tutorial.css';
 import { TutorialStep } from './tutorial-data';

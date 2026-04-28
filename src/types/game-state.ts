@@ -1,9 +1,12 @@
-import { Goal } from "./goal";
-import { Position } from "./position";
-import { Match } from "./match";
-import { ActiveBonus } from "./active-bonus";
-import { GameModifiers } from "./game-modifiers";
-import { Bonus } from "./bonus";
+import { Goal } from "./level";
+import { Position, Match } from "./board";
+import { ActiveBonus, Bonus } from "./bonus";
+
+export type GameModifiers = {
+  doublePoints: boolean;
+  doubleGoalProgress: boolean;
+  extraMoves: number;
+};
 
 export type GameGoalsState = {
   goals: Goal[];

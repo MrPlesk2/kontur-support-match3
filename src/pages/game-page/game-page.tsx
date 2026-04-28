@@ -1,28 +1,29 @@
-import { GameField } from "@components/game-field/game-field";
-import { Score } from "@components/score/score";
-import { Moves } from "@components/moves/moves";
-import { Goals } from "@components/goals/goals";
-import { Bonuses } from "@components/bonuses/bonuses";
-import { LevelTransition } from "@components/level-transition/level-transition/level-transition";
+import { useEffect, useState, useRef } from "react";
 import { useGameLogic } from "@hooks/use-game-logic";
-import { Window } from "@components/window/window";
+import {
+  GameField,
+  Score,
+  Moves,
+  Goals,
+  Bonuses,
+  LevelTransition,
+  Window,
+  Tutorial,
+  ShuffleWarning,
+  GoalAnimation
+} from "../../components";
 import {
   LEVELS,
   LAST_LEVEL,
   SOUND_PATHS,
+  SOUND_ICON_PATHS,
   MUSIC_LOOP_START,
   MUSIC_LOOP_END,
+  TUTORIALS,
+  KONTUR_SUPPORT_LINK
 } from "consts";
-import { useEffect, useState, useRef } from "react";
-import { TUTORIALS } from "@components/tutorial/tutorial-data";
-import { Tutorial } from "@components/tutorial/tutorial";
-import { ShuffleWarning } from "@components/shuffle-warning/shuffle-warning";
 import { Position, FigureType } from "types";
-import { GoalAnimation as GoalAnimationComponent } from "@components/goal-animation/goal-animation";
 import logoKontur from "@/assets/logo/logo-kontur.png";
-import soundOffIcon from "@/assets/icons/sound-off.svg";
-import soundMediumIcon from "@/assets/icons/sound-medium.svg";
-import soundLoudIcon from "@/assets/icons/sound-loud.svg";
 import "./game-page.styles.css";
 
 type GoalAnimationItem = {
@@ -83,7 +84,11 @@ export default function GamePage() {
   const currentLevelId = gameLogic.levelState.currentLevel;
 
   const volumeIcon =
-    volume === 0 ? soundOffIcon : volume < 60 ? soundMediumIcon : soundLoudIcon;
+    volume === 0
+    ? SOUND_ICON_PATHS.soundOff
+    : volume < 60
+      ? SOUND_ICON_PATHS.soundMedium
+      : SOUND_ICON_PATHS.soundLoud;
 
   useEffect(() => {
     const audio = new Audio(SOUND_PATHS.background);
@@ -189,7 +194,7 @@ export default function GamePage() {
       <LevelTransition
         currentLevel={gameLogic.levelState.currentLevel}
         onLevelStart={gameLogic.handleLevelStart}
-        promotionLink="https://kontur.ru/lp/support?utm_ad=%7Bad_id%7D&p=1210&utm_medium=cpc&utm_source=YandexDirect&utm_campaign=vacancy-hr_brand_rsya&utm_content=uks_stranitsa_sayta%7Cad%7C%7Bad_id%7D%7Cgid%7C%7Bgbid%7D%7Ccid%7C%7Bcampaign_id%7D%7Ccpn%7C%7Bcampaign_name_lat%7D%7Csrc%7C%7Bsource_type%7D%7Cdev%7C%7Bdevice_type%7D%7Crgn%7C%7Bregion_name%7D%7Cmtp%7C%7Bmatch_type%7D%7Ctid%7C%7Bphrase_id%7D_%7Bretargeting_id%7D%7Cref%7C%7Bsource%7D&utm_term=%7BSupport_game%7D"
+        promotionLink={KONTUR_SUPPORT_LINK}
       />
     );
   }
@@ -209,7 +214,7 @@ export default function GamePage() {
       />
 
       {goalAnimations.map((anim) => (
-        <GoalAnimationComponent
+        <GoalAnimation
           key={anim.id}
           id={anim.id}
           position={anim.position}

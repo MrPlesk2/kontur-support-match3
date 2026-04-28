@@ -1,8 +1,20 @@
 import { FigureType } from "./figure";
-import { Goal } from "./goal";
-import { SpecialCell } from "./special-cell";
-import { Position } from "./position";
+import { SpecialCell, Position } from "./board";
 import { Bonus } from "./bonus";
+
+export type Goal = {
+  figure: FigureType;
+  target: number;
+  collected: number;
+};
+
+export type LevelState = {
+  currentLevel: number;
+  isLevelComplete: boolean;
+  isLevelTransition: boolean;
+  selectedBonuses: Bonus[];
+  isLevelFailed: boolean;
+};
 
 export type Level = {
   id: number;

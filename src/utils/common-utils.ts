@@ -1,7 +1,7 @@
 import { FIGURES, FigureType } from "types";
 
 export const getRandomFigure = (availableFigures?: FigureType[]): FigureType => {
-  const figures = availableFigures || FIGURES;
+  const figures = availableFigures || (Object.values(FIGURES) as FigureType[]);
   return figures[Math.floor(Math.random() * figures.length)];
 };
 

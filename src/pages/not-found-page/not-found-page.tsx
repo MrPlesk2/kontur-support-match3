@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { AppRoute } from "../../consts/routes.js";
+import { AppRoute } from "../../consts/routes";
 import type { JSX } from "react";
 
 function NotFoundPage(): JSX.Element {

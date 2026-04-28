@@ -1,4 +1,3 @@
-// components/shuffle-warning/shuffle-warning.tsx
 import { useEffect } from 'react';
 import './shuffle-warning.css';
 
