@@ -186,6 +186,8 @@ export default function GamePage() {
               fixedBonuses
             );
           }}
+          volume={volume}
+          onVolumeChange={setVolume}
         />
       );
     }
@@ -195,6 +197,8 @@ export default function GamePage() {
         currentLevel={gameLogic.levelState.currentLevel}
         onLevelStart={gameLogic.handleLevelStart}
         promotionLink={KONTUR_SUPPORT_LINK}
+        volume={volume}
+        onVolumeChange={setVolume}
       />
     );
   }
