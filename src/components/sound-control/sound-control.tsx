@@ -7,6 +7,7 @@ export type SoundControlProps = {
   onVolumeChange: (volume: number) => void;
   containerClassName?: string;
   audioRef?: React.RefObject<HTMLAudioElement>;
+  gainNodeRef?: React.RefObject<GainNode | null>;
 };
 
 export const SoundControl = ({
@@ -14,6 +15,7 @@ export const SoundControl = ({
   onVolumeChange,
   containerClassName = "",
   audioRef,
+  gainNodeRef,
 }: SoundControlProps) => {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const soundControlRef = useRef<HTMLDivElement>(null);
@@ -24,10 +26,20 @@ export const SoundControl = ({
     volume === 0 ? SOUND_ICON_PATHS.soundOff : volume < 60 ? SOUND_ICON_PATHS.soundMedium : SOUND_ICON_PATHS.soundLoud;
 
   const handleSliderChange = (newVolume: number) => {
-    onVolumeChange(newVolume);
-    if (audioRef?.current) {
-      audioRef.current.volume = newVolume / 600;
+    const volumeValue = newVolume / 600;
+    
+    // Обновляем громкость в Web Audio API если доступна (для iOS)
+    if (gainNodeRef?.current) {
+      gainNodeRef.current.gain.value = volumeValue;
     }
+    
+    // Также обновляем на audio элементе
+    if (audioRef?.current) {
+      audioRef.current.volume = volumeValue;
+    }
+    
+    // Обновляем состояние
+    onVolumeChange(newVolume);
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLInputElement>) => {
@@ -44,8 +56,22 @@ export const SoundControl = ({
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const newVolume = Math.round(percentage * 100);
     
+    // Обновляем значение input
     slider.value = String(newVolume);
-    handleSliderChange(newVolume);
+    
+    // Обновляем громкость напрямую для немедленного эффекта на iPhone
+    const volumeValue = newVolume / 600;
+    
+    if (gainNodeRef?.current) {
+      gainNodeRef.current.gain.value = volumeValue;
+    }
+    
+    if (audioRef?.current) {
+      audioRef.current.volume = volumeValue;
+    }
+    
+    // И через callback
+    onVolumeChange(newVolume);
   };
 
   useEffect(() => {

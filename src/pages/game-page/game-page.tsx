@@ -52,6 +52,9 @@ export default function GamePage() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const musicStartedRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const mediaSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
   const onGoalCollected = (
     position: Position,
@@ -85,10 +88,41 @@ export default function GamePage() {
     const audio = new Audio(SOUND_PATHS.background);
     audioRef.current = audio;
     audio.volume = volume / 600;
+    audio.loop = false;
+
+    // Инициализируем Web Audio API для лучшей поддержки на iOS
+    const initAudioContext = async () => {
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = audioContext;
+        
+        const gainNode = audioContext.createGain();
+        gainNodeRef.current = gainNode;
+        gainNode.gain.value = volume / 600;
+        gainNode.connect(audioContext.destination);
+        
+        const mediaSource = audioContext.createMediaElementAudioSource(audio);
+        mediaSourceRef.current = mediaSource;
+        mediaSource.connect(gainNode);
+      } catch (error) {
+        console.warn("Web Audio API не поддерживается:", error);
+      }
+    };
 
     const playMusic = async () => {
       try {
         audio.volume = volume / 600;
+        
+        // Инициализируем Web Audio API при первом воспроизведении
+        if (!audioContextRef.current) {
+          await initAudioContext();
+        }
+        
+        // Resume audio context если необходимо (для iOS)
+        if (audioContextRef.current?.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
+        
         await audio.play();
         musicStartedRef.current = true;
       } catch (error) {
@@ -111,12 +145,14 @@ export default function GamePage() {
       if (!musicStartedRef.current) {
         playMusic();
         document.removeEventListener("click", handleFirstClick);
+        document.removeEventListener("touchstart", handleFirstClick);
       }
     };
 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
     document.addEventListener("click", handleFirstClick);
+    document.addEventListener("touchstart", handleFirstClick);
 
     return () => {
       audio.pause();
@@ -124,14 +160,23 @@ export default function GamePage() {
       audio.removeEventListener("timeupdate", handleTimeUpdate);
       audio.removeEventListener("ended", handleEnded);
       document.removeEventListener("click", handleFirstClick);
+      document.removeEventListener("touchstart", handleFirstClick);
       audioRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    const volumeValue = volume / 600;
+    
+    // Обновляем громкость в Web Audio API если доступна
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volumeValue;
+    }
+    
+    // Также обновляем на audio элементе
     if (audioRef.current) {
-      audioRef.current.volume = volume / 600;
+      audioRef.current.volume = volumeValue;
     }
   }, [volume]);
 
@@ -219,6 +264,7 @@ export default function GamePage() {
                 onVolumeChange={setVolume}
                 containerClassName="gp-sound-control header-sound-control"
                 audioRef={audioRef}
+                gainNodeRef={gainNodeRef}
               />
               <img src={logoKontur} alt="Logo Kontur" className="game-logo" />
             </div>
@@ -237,6 +283,7 @@ export default function GamePage() {
                 onVolumeChange={setVolume}
                 containerClassName="gp-sound-control game-info-sound-control"
                 audioRef={audioRef}
+                gainNodeRef={gainNodeRef}
               />
             </div>
 
