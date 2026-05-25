@@ -17,13 +17,39 @@ export const SoundControl = ({
 }: SoundControlProps) => {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const soundControlRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLInputElement>(null);
   const className = ["sound-control", containerClassName].filter(Boolean).join(" ");
 
   const volumeIcon =
     volume === 0 ? SOUND_ICON_PATHS.soundOff : volume < 60 ? SOUND_ICON_PATHS.soundMedium : SOUND_ICON_PATHS.soundLoud;
 
+  const handleSliderChange = (newVolume: number) => {
+    onVolumeChange(newVolume);
+    if (audioRef?.current) {
+      audioRef.current.volume = newVolume / 600;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!sliderRef.current) return;
+    
+    const touch = e.touches[0];
+    const slider = sliderRef.current;
+    const rect = slider.getBoundingClientRect();
+    
+    const x = touch.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, x / rect.width));
+    const newVolume = Math.round(percentage * 100);
+    
+    slider.value = String(newVolume);
+    handleSliderChange(newVolume);
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         showVolumeSlider &&
         soundControlRef.current &&
@@ -33,11 +59,9 @@ export const SoundControl = ({
       }
     };
 
-    document.addEventListener("click", handleClickOutside as EventListener);
-    document.addEventListener("touchend", handleClickOutside as EventListener);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener("click", handleClickOutside as EventListener);
-      document.removeEventListener("touchend", handleClickOutside as EventListener);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, [showVolumeSlider]);
 
@@ -66,20 +90,17 @@ export const SoundControl = ({
           onClick={(e) => e.stopPropagation()}
         >
           <input
+            ref={sliderRef}
             className="sound-slider"
             type="range"
             min={0}
             max={100}
             value={volume}
-            onChange={(e) => onVolumeChange(Number(e.target.value))}
-            onInput={(e) => {
-              const newVolume = Number((e.target as HTMLInputElement).value);
-              onVolumeChange(newVolume);
-              if (audioRef?.current) {
-                audioRef.current.volume = newVolume / 600;
-              }
-            }}
+            onChange={(e) => handleSliderChange(Number(e.target.value))}
+            onInput={(e) => handleSliderChange(Number((e.target as HTMLInputElement).value))}
+            onTouchMove={handleTouchMove}
             onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             aria-label="Громкость музыки"
           />
