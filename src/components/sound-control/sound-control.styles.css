@@ -57,6 +57,9 @@
   width: 100%;
   cursor: pointer;
   accent-color: #ff8d28;
+  touch-action: manipulation;
+  -webkit-appearance: slider-horizontal;
+  pointer-events: auto;
 }
 
 /* Layout variations */

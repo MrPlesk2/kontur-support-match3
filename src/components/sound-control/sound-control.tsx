@@ -21,7 +21,7 @@ export const SoundControl = ({
     volume === 0 ? SOUND_ICON_PATHS.soundOff : volume < 60 ? SOUND_ICON_PATHS.soundMedium : SOUND_ICON_PATHS.soundLoud;
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         showVolumeSlider &&
         soundControlRef.current &&
@@ -31,8 +31,12 @@ export const SoundControl = ({
       }
     };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    document.addEventListener("click", handleClickOutside as EventListener);
+    document.addEventListener("touchend", handleClickOutside as EventListener);
+    return () => {
+      document.removeEventListener("click", handleClickOutside as EventListener);
+      document.removeEventListener("touchend", handleClickOutside as EventListener);
+    };
   }, [showVolumeSlider]);
 
   return (
@@ -54,7 +58,11 @@ export const SoundControl = ({
       </button>
 
       {showVolumeSlider && (
-        <div className="sound-panel">
+        <div 
+          className="sound-panel"
+          onTouchStart={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <input
             className="sound-slider"
             type="range"
@@ -62,6 +70,8 @@ export const SoundControl = ({
             max={100}
             value={volume}
             onChange={(e) => onVolumeChange(Number(e.target.value))}
+            onTouchStart={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             aria-label="Громкость музыки"
           />
         </div>
