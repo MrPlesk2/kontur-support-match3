@@ -104,7 +104,7 @@ export default function GamePage() {
         gainNode.connect(audioContext.destination);
         
         // Подключаем audio элемент к Web Audio API
-        const mediaSource = audioContext.createMediaElementAudioSource(audio);
+        const mediaSource = audioContext.createMediaElementSource(audio);
         mediaSourceRef.current = mediaSource;
         mediaSource.connect(gainNode);
       } catch (error) {

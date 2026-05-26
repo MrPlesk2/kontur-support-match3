@@ -6,7 +6,7 @@ export type SoundControlProps = {
   volume: number;
   onVolumeChange: (volume: number) => void;
   containerClassName?: string;
-  audioRef?: React.RefObject<HTMLAudioElement>;
+  audioRef?: React.RefObject<HTMLAudioElement | null>;
   gainNodeRef?: React.RefObject<GainNode | null>;
 };
 
