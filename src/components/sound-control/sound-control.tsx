@@ -15,16 +15,15 @@ export type SoundControlProps = {
 const isIPhone = (): boolean => {
   const userAgent = navigator.userAgent.toLowerCase();
   
-  // Проверяем на наличие iPhone/iOS
-  const hasIPhone = /iphone|ipod|ios/.test(userAgent);
-  const hasIPad = /ipad|mac os x/.test(userAgent);
+  // Проверяем на iPhone/iPod (но не iPad)
+  const isIOS = /iphone|ipod/.test(userAgent);
+  const isIPad = /ipad|mac os x/.test(userAgent) && !/iphone|ipod/.test(userAgent);
   
-  // iPhone это iOS БЕЗ iPad
-  const isiPhone = hasIPhone && !hasIPad;
+  const isiPhone = isIOS && !isIPad;
   
   // Логируем для отладки
   if (typeof window !== 'undefined') {
-    console.log('[SoundControl] Device detection:', { userAgent, hasIPhone, hasIPad, isiPhone });
+    console.log('[SoundControl] Device detection:', { userAgent, isIOS, isIPad, isiPhone });
   }
   
   return isiPhone;
@@ -60,7 +59,7 @@ export const SoundControl = ({
   };
 
   const handleSliderChange = (newVolume: number) => {
-    const volumeValue = newVolume / 600;
+    const volumeValue = newVolume / 250;
     
     // На iOS управление громкостью работает только через Web Audio API GainNode
     // audio.volume на iOS читается только и не может быть изменен
@@ -100,7 +99,7 @@ export const SoundControl = ({
     // Обновляем значение input
     slider.value = String(newVolume);
     
-    const volumeValue = newVolume / 600;
+    const volumeValue = newVolume / 250;
     
     // Обновляем громкость через Web Audio API
     if (gainNodeRef?.current) {

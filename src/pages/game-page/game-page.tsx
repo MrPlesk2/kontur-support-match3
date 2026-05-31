@@ -48,7 +48,7 @@ export default function GamePage() {
   >({});
   const [showTutorial, setShowTutorial] = useState(false);
   const [viewedTutorials, setViewedTutorials] = useState<number[]>([]);
-  const [volume, setVolume] = useState(15);
+  const [volume, setVolume] = useState(50);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const musicStartedRef = useRef(false);
@@ -100,7 +100,7 @@ export default function GamePage() {
         // Создаем GainNode для контроля громкости
         const gainNode = audioContext.createGain();
         gainNodeRef.current = gainNode;
-        gainNode.gain.value = volume / 600;
+        gainNode.gain.value = volume / 250;
         gainNode.connect(audioContext.destination);
         
         // Подключаем audio элемент к Web Audio API
@@ -168,7 +168,7 @@ export default function GamePage() {
   }, []);
 
   useEffect(() => {
-    const volumeValue = volume / 600;
+    const volumeValue = volume / 250;
     
     // Обновляем громкость в Web Audio API если доступна
     if (gainNodeRef.current) {
