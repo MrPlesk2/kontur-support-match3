@@ -106,6 +106,7 @@ export const useGameLogic = (onGoalCollected?: (position: Position, figureType: 
     setBoard,
     setIsAnimating: gameState.setIsAnimating,
     setMoves: gameState.setMoves,
+    setScore: gameState.setScore,
     setGoals: gameState.setGoals,
     setMatches: gameState.setMatches,
     goals: gameState.goals,

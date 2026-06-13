@@ -48,6 +48,7 @@ type UseInputHandlersProps = {
   setBoard: (board: Board) => void;
   setIsAnimating: (animating: boolean) => void;
   setMoves: (updater: (moves: number) => number) => void;
+  setScore: (updater: (score: number) => number) => void;
   setGoals: (updater: (goals: Goal[]) => Goal[]) => void;
   setMatches: (matches: Match[]) => void;
   goals: Goal[];
@@ -74,6 +75,7 @@ export const useInputHandlers = ({
   setBoard,
   setIsAnimating,
   setMoves,
+  setScore,
   setGoals,
   setMatches,
   goals,
@@ -512,6 +514,9 @@ export const useInputHandlers = ({
     triggerGoalAnimations(removedFigures, removedGoldenCells);
     const updatedSpecialCells = updateGoalsAndSpecialCells(removedFigures, removedGoldenCells);
     setMoves((prev) => (prev <= 0 ? 0 : prev - 1));
+    if (removedFigures.length > 0) {
+      setScore((prev) => prev + removedFigures.length * 10);
+    }
 
     setIsAnimating(true);
     try {
@@ -557,6 +562,9 @@ export const useInputHandlers = ({
     triggerGoalAnimations(removedFigures, removedGoldenCells);
     const updatedSpecialCells = updateGoalsAndSpecialCells(removedFigures, removedGoldenCells);
     setMoves((prev) => (prev <= 0 ? 0 : prev - 1));
+    if (removedFigures.length > 0) {
+      setScore((prev) => prev + removedFigures.length * 10);
+    }
 
     setIsAnimating(true);
     try {

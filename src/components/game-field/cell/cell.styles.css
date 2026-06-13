@@ -128,7 +128,6 @@
 }
 
 .cell--team:hover {
-  background: #f8f8f8;
   transform: scale(1.05);
 }
 
@@ -274,12 +273,12 @@
 
 @keyframes cellExplode {
   0% {
-    background-color: #ffe566;
-    box-shadow: 0 0 14px rgba(255, 200, 0, 0.9);
+    background-color: #ffd580;
+    box-shadow: 0 0 10px rgba(255, 200, 0, 0.55);
   }
   45% {
-    background-color: #ff8c00;
-    box-shadow: 0 0 8px rgba(255, 120, 0, 0.6);
+    background-color: #ffb347;
+    box-shadow: 0 0 6px rgba(255, 120, 0, 0.35);
   }
   100% {
     background-color: white;
@@ -289,14 +288,14 @@
 
 @keyframes explodeRing {
   0% {
-    background: rgba(255, 240, 100, 0.75);
+    background: rgba(255, 230, 120, 0.45);
     transform: scale(1);
     opacity: 1;
   }
   55% {
-    background: rgba(255, 120, 0, 0.4);
+    background: rgba(255, 150, 50, 0.25);
     transform: scale(1.25);
-    opacity: 0.6;
+    opacity: 0.5;
   }
   100% {
     background: rgba(255, 60, 0, 0);
