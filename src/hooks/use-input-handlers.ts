@@ -14,6 +14,11 @@ import {
 import { BONUS_EFFECTS } from "@utils/bonus-effects/effects-registry";
 import { applyGravity, fillEmptySlots, applyHorizontalGravity } from "@utils/game-logic";
 import { isTeamImage } from "@utils/game-utils";
+import {
+  progressTeamHappyOne,
+  progressTeamHappyTwo,
+  progressTeamHappyThree,
+} from "@utils/game-team-utils";
 import { ANIMATION_DURATION, BOARD_ROWS, LEVELS } from "consts";
 import { applyModernProductsAt } from "@utils/bonus-effects/modern-products";
 
@@ -478,10 +483,15 @@ export const useInputHandlers = ({
       }
     });
 
-    const blastPositions = [...clearedPositions].map((key) => {
-      const [r, c] = key.split(",").map(Number);
-      return { row: r, col: c };
-    });
+    const blastPositions = [...clearedPositions]
+      .map((key) => {
+        const [r, c] = key.split(",").map(Number);
+        return { row: r, col: c };
+      })
+      .filter(({ row, col }) => {
+        const fig = newBoard[row][col];
+        return !fig || (fig.type !== "team" && !isTeamImage(fig.type));
+      });
 
     return { newBoard, removedFigures, removedGoldenCells, blastPositions };
   };
@@ -504,6 +514,45 @@ export const useInputHandlers = ({
     });
   };
 
+  const applyTeamBombGoal = (
+    blastPositions: Position[],
+    currentBoard: Board
+  ): Board => {
+    const teamCellsHit = blastPositions.filter((pos) =>
+      specialCells?.some(
+        (sc) => sc.row === pos.row && sc.col === pos.col && sc.type === "team" && sc.isActive !== false
+      )
+    );
+    if (teamCellsHit.length === 0) return currentBoard;
+
+    const teamGoalIndex = goals.findIndex((g) => g.figure === "teamCell");
+    if (teamGoalIndex === -1) return currentBoard;
+
+    const teamGoal = goals[teamGoalIndex];
+    const oldCollected = teamGoal.collected;
+    const newCollected = Math.min(oldCollected + 1, teamGoal.target);
+
+    setGoals((prev) => {
+      const next = [...prev];
+      next[teamGoalIndex] = { ...next[teamGoalIndex], collected: newCollected };
+      return next;
+    });
+
+    if (onGoalCollected) {
+      onGoalCollected(teamCellsHit[0], "teamCell", teamGoalIndex);
+    }
+
+    let updatedBoard = currentBoard;
+    if (newCollected >= 14 && oldCollected < 14) {
+      updatedBoard = progressTeamHappyThree(updatedBoard);
+    } else if (newCollected >= 9 && oldCollected < 9) {
+      updatedBoard = progressTeamHappyTwo(updatedBoard);
+    } else if (newCollected >= 4 && oldCollected < 4) {
+      updatedBoard = progressTeamHappyOne(updatedBoard);
+    }
+    return updatedBoard;
+  };
+
   // Click on a bomb → explode it (BFS chain explosions)
   const explodeBomb = async (bombPos: Position) => {
     const { newBoard, removedFigures, removedGoldenCells, blastPositions } = collectExplosion(
@@ -518,17 +567,19 @@ export const useInputHandlers = ({
       setScore((prev) => prev + removedFigures.length * 10);
     }
 
+    const boardAfterTeam = applyTeamBombGoal(blastPositions, newBoard);
+
     setIsAnimating(true);
     try {
       setExplosionPositions(blastPositions);
       await new Promise((r) => setTimeout(r, 280));
 
-      setBoard([...newBoard]);
+      setBoard([...boardAfterTeam]);
       setExplosionPositions([]);
       await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
       let updatedBoard = await applyGravityAndFillStepwise(
-        newBoard,
+        boardAfterTeam,
         LEVELS[levelState.currentLevel - 1]
       );
 
@@ -566,17 +617,19 @@ export const useInputHandlers = ({
       setScore((prev) => prev + removedFigures.length * 10);
     }
 
+    const boardAfterTeam = applyTeamBombGoal(blastPositions, newBoard);
+
     setIsAnimating(true);
     try {
       setExplosionPositions(blastPositions);
       await new Promise((r) => setTimeout(r, 280));
 
-      setBoard([...newBoard]);
+      setBoard([...boardAfterTeam]);
       setExplosionPositions([]);
       await new Promise((r) => setTimeout(r, ANIMATION_DURATION));
 
       let updatedBoard = await applyGravityAndFillStepwise(
-        newBoard,
+        boardAfterTeam,
         LEVELS[levelState.currentLevel - 1]
       );
 
