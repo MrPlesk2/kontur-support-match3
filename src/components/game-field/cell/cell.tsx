@@ -166,6 +166,7 @@ export const Cell: React.FC<CellProps> = ({
         specialCell ? `cell--${specialCell.type}` : "",
         isStar ? "cell--star" : "",
         isDiamond ? "cell--diamond" : "",
+        isBomb ? "cell--bomb" : "",
         isBlocked ? "cell--blocked" : "",
       ]
         .filter(Boolean)

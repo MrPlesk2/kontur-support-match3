@@ -1,5 +1,15 @@
 import { TutorialStep } from "@components/tutorial/tutorial-data";
 
+export const BOMB_TUTORIAL: TutorialStep[] = [
+  {
+    text: "Четыре фигурки в ряд — и появляется бомба! Нажми на неё, чтобы взорвать соседние клетки",
+    characterPos: "left",
+    highlightSelector: ".cell--bomb",
+    position: { top: "64%", left: "15%" },
+    mobilePosition: { top: "12%", left: "8%" },
+  },
+];
+
 export const TUTORIALS: Record<number, TutorialStep[]> = {
   1: [
     { text: "Привет! Я твой наставник", characterPos: 'left', highlightSelector: undefined, position: { top: '40%', left: '37%' }, mobilePosition: { top: '42%', left: '10%' }},

@@ -20,6 +20,7 @@ import {
   MUSIC_LOOP_START,
   MUSIC_LOOP_END,
   TUTORIALS,
+  BOMB_TUTORIAL,
   KONTUR_SUPPORT_LINK,
 } from "consts";
 import { Position, FigureType } from "types";
@@ -48,6 +49,8 @@ export default function GamePage() {
   >({});
   const [showTutorial, setShowTutorial] = useState(false);
   const [viewedTutorials, setViewedTutorials] = useState<number[]>([]);
+  const [showBombTutorial, setShowBombTutorial] = useState(false);
+  const [bombTutorialShown, setBombTutorialShown] = useState(false);
   const [volume, setVolume] = useState(15);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -145,6 +148,20 @@ export default function GamePage() {
     }
   }, [gameLogic.levelState.isLevelTransition, currentLevelId, viewedTutorials]);
 
+  // Показываем туториал про бомбу когда она впервые появляется на поле
+  useEffect(() => {
+    if (bombTutorialShown || showBombTutorial || gameLogic.levelState.isLevelTransition) return;
+    const hasBomb = gameLogic.board.some((row) => row.some((cell) => cell?.type === "bomb"));
+    if (hasBomb) setShowBombTutorial(true);
+  }, [gameLogic.board, bombTutorialShown, showBombTutorial, gameLogic.levelState.isLevelTransition]);
+
+  // Очищаем анимации засчитывания при переходе на новый уровень
+  useEffect(() => {
+    if (gameLogic.levelState.isLevelTransition) {
+      setGoalAnimations([]);
+    }
+  }, [gameLogic.levelState.isLevelTransition]);
+
   const handleCloseTutorial = () => {
     setShowTutorial(false);
     setViewedTutorials((prev) => [...prev, currentLevelId]);
@@ -187,6 +204,16 @@ export default function GamePage() {
         <Tutorial
           steps={TUTORIALS[currentLevelId]}
           onComplete={handleCloseTutorial}
+        />
+      )}
+
+      {showBombTutorial && !gameLogic.isAnimating && (
+        <Tutorial
+          steps={BOMB_TUTORIAL}
+          onComplete={() => {
+            setShowBombTutorial(false);
+            setBombTutorialShown(true);
+          }}
         />
       )}
 
