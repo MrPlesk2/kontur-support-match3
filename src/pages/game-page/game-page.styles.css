@@ -56,6 +56,10 @@
   text-align: center;
 }
 
+.level-name--long {
+  font-size: 22px;
+}
+
 .left-panel {
   display: flex;
   flex-direction: column;

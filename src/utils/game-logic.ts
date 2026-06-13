@@ -195,6 +195,10 @@ export const createInitialBoard = (level?: Level): Board => {
     return createInitialBoard(level);
   }
 
+  if (!hasPossibleMoves(newBoard)) {
+    return createInitialBoard(level);
+  }
+
   return normalizeBoard(newBoard);
 };
 

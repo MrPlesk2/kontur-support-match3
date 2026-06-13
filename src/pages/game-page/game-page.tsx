@@ -254,7 +254,10 @@ export default function GamePage() {
           <div className="game-field-section">
             <div className="game-info">
               <Score score={gameLogic.score} />
-              <div className="level-name" data-text={gameLogic.currentLevel?.name}>
+              <div
+                className={`level-name${currentLevelId === 5 ? " level-name--long" : ""}`}
+                data-text={gameLogic.currentLevel?.name}
+              >
                 {gameLogic.currentLevel?.name}
               </div>
               <Moves moves={gameLogic.moves} />
