@@ -121,8 +121,8 @@ export const LevelTransition = ({
 
   const alternateButtonText =
     currentLevel === 4
-      ? "Пройти уровень Эксперт"
-      : "Пройти уровень Руководитель группы";
+      ? "Пройти уровень Руководитель группы"
+      : "Пройти уровень Эксперт";
 
   return (
     <div className="overlay">

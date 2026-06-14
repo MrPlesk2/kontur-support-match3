@@ -27,11 +27,15 @@
   position: relative;
 }
 
+@media (max-height: 800px) and (max-width: 500px) {
+  .modal { max-height: 80vh; overflow: auto;}
+}
+
 .actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 5px;
+  margin-top: 10px;
   align-items: center;
 }
 
@@ -50,7 +54,6 @@
 }
 
 .link-button--small {
-  width: 64%;
   min-height: 34px;
   padding: 7px 10px;
   font-size: 12px;

@@ -4,7 +4,7 @@
   border: none;
   border-radius: 25px;
   padding: 12px 40px;
-  margin: 15px auto 0;
+  margin: 0 auto;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -17,6 +17,6 @@
   
 }
 
-@media (max-height: 700px) {
-  .blue-button { padding: 8px 30px; font-size: 17px; }
+@media (max-height: 800px) and (max-width: 500px) {
+  .blue-button { padding: 8px 20px; font-size: 15px; }
 }
